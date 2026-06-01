@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Himnario Adventista — 日本語・Español</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0C1A28;--navy2:#142030;--navy3:#1C2E40;
+  --gold:#C9A84C;--gold2:#E8D08A;--gold3:#F5E8B4;
+  --white:#F4EFE6;--muted:#7A9BB5;--dim:#4A6A85;
+  --esp:#E8D08A;--jpn:#A8D8B0;--jpn2:#7ABC8A;
+  --red:#B85050;--green:#4A8A5A;
+  --radius:3px;
+}
+html{height:100%;background:#060E18}
+body{
+  min-height:100vh;background:var(--navy);
+  color:var(--white);
+  font-family:"IM Fell English",serif;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+
+/* ─── BACKGROUND ─── */
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ─── FRAME ─── */
+.frame-line{position:fixed;background:var(--gold);pointer-events:none;z-index:8;opacity:.6}
+.fl-t{top:0;left:0;right:0;height:2px}
+.fl-b{bottom:0;left:0;right:0;height:2px}
+.fl-l{top:2px;left:0;bottom:2px;width:1px;opacity:.3}
+.fl-r{top:2px;right:0;bottom:2px;width:1px;opacity:.3}
+.corner-mark{position:fixed;z-index:9;pointer-events:none}
+.corner-mark::before,.corner-mark::after{content:'';position:absolute;background:var(--gold);opacity:.7}
+.corner-mark::before{width:24px;height:1.5px;top:0;left:0}
+.corner-mark::after{width:1.5px;height:24px;top:0;left:0}
+.cm-tl{top:10px;left:10px}
+.cm-tr{top:10px;right:10px;transform:rotate(90deg)}
+.cm-bl{bottom:10px;left:10px;transform:rotate(270deg)}
+.cm-br{bottom:10px;right:10px;transform:rotate(180deg)}
+
+/* ─── LAYOUT ─── */
+#app{position:fixed;inset:0;display:flex;flex-direction:column;z-index:5}
+
+/* ─── HEADER ─── */
+#hdr{
+  flex-shrink:0;
+  display:flex;align-items:center;
+  gap:clamp(6px,2vw,16px);
+  padding:clamp(8px,1.5vh,14px) clamp(12px,3vw,24px);
+  border-bottom:1px solid rgba(201,168,76,.2);
+  background:rgba(12,26,40,.95);
+  backdrop-filter:blur(8px);
+}
+#menu-btn{
+  background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);
+  color:var(--gold);width:clamp(30px,5vw,38px);height:clamp(30px,5vw,38px);
+  cursor:pointer;font-size:1rem;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;border-radius:var(--radius);
+}
+#menu-btn:hover{background:rgba(201,168,76,.25)}
+#search-wrap{
+  flex:1;position:relative;max-width:400px;
+}
+#search{
+  width:100%;background:rgba(255,255,255,.06);
+  border:1px solid rgba(201,168,76,.25);
+  color:var(--white);
+  padding:clamp(5px,1vh,9px) clamp(10px,2vw,16px);
+  font-family:"IM Fell English",serif;
+  font-size:clamp(.8rem,1.8vw,1rem);
+  border-radius:var(--radius);
+  outline:none;
+  transition:border-color .2s;
+}
+#search::placeholder{color:var(--dim)}
+#search:focus{border-color:var(--gold)}
+#hdr-title{
+  font-family:"Cinzel",serif;
+  font-size:clamp(.7rem,1.8vw,1rem);
+  color:var(--gold2);letter-spacing:.1em;
+  white-space:nowrap;flex-shrink:0;
+}
+#hdr-num{
+  font-family:"Cinzel",serif;
+  font-size:clamp(.65rem,1.5vw,.85rem);
+  color:var(--muted);letter-spacing:.05em;
+  flex-shrink:0;margin-left:auto;
+}
+#lang-toggle{
+  flex-shrink:0;display:flex;gap:4px;
+}
+.lt-btn{
+  padding:clamp(3px,.8vh,6px) clamp(6px,1.5vw,10px);
+  font-family:"Cinzel",serif;font-size:.65rem;letter-spacing:.08em;
+  border:1px solid rgba(201,168,76,.25);
+  background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .2s;border-radius:var(--radius);
+}
+.lt-btn.on{background:rgba(201,168,76,.2);color:var(--gold2);border-color:var(--gold)}
+
+/* ─── MAIN CONTENT ─── */
+#main{flex:1;overflow:hidden;position:relative}
+
+/* ─── PRESENTATION VIEW ─── */
+#present-view{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  opacity:1;transition:opacity .3s;
+}
+#present-view.hidden{opacity:0;pointer-events:none}
+
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  opacity:0;transition:opacity .6s ease;pointer-events:none;
+}
+.slide.active{opacity:1;pointer-events:auto}
+
+/* Title/Welcome slide */
+.welcome-slide{
+  align-items:center;justify-content:center;
+  padding:8% 10%;text-align:center;
+}
+.ws-title{
+  font-family:"Cinzel",serif;
+  font-size:clamp(2rem,6vw,5rem);
+  color:var(--white);letter-spacing:.06em;line-height:1.2;
+  text-shadow:0 4px 20px rgba(0,0,0,.6);
+  margin-bottom:.3em;
+}
+.ws-jp{
+  font-family:"Noto Serif JP",serif;
+  font-size:clamp(1.4rem,4vw,3.2rem);
+  color:var(--jpn);letter-spacing:.08em;
+  margin-bottom:.6em;
+}
+.ws-rule{width:min(300px,50vw);height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent);margin:.8em auto}
+.ws-sub{font-size:clamp(.75rem,1.8vw,1.1rem);color:var(--muted);letter-spacing:.12em}
+.cross-icon{position:relative;width:20px;height:32px;margin:1.2em auto 0}
+.cross-icon::before{content:'';position:absolute;left:50%;transform:translateX(-50%);width:4px;height:100%;background:var(--gold);border-radius:1px}
+.cross-icon::after{content:'';position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);width:100%;height:4px;background:var(--gold);border-radius:1px}
+
+/* Hymn slide */
+.hymn-slide{
+  padding:clamp(8px,2vh,20px) clamp(12px,3vw,36px);
+  padding-bottom:clamp(50px,8vh,70px);
+}
+.hymn-hdr{
+  flex-shrink:0;
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:1rem;
+  border-bottom:1px solid rgba(201,168,76,.2);
+  padding-bottom:clamp(5px,1vh,10px);
+  margin-bottom:clamp(6px,1.5vh,14px);
+}
+.hymn-num-badge{
+  font-family:"Cinzel",serif;
+  font-size:clamp(1.4rem,4vw,3rem);
+  color:var(--gold);line-height:1;
+  flex-shrink:0;
+}
+.hymn-titles{flex:1}
+.hymn-title-esp{
+  font-family:"Cinzel",serif;
+  font-size:clamp(.9rem,2.5vw,1.6rem);
+  color:var(--esp);letter-spacing:.08em;line-height:1.3;
+}
+.hymn-title-jp{
+  font-family:"Noto Serif JP",serif;
+  font-size:clamp(.7rem,1.8vw,1.1rem);
+  color:var(--jpn);letter-spacing:.06em;
+  margin-top:3px;
+}
+.hymn-stanza-info{
+  font-family:"Cinzel",serif;
+  font-size:clamp(.55rem,1.2vw,.75rem);
+  color:var(--muted);letter-spacing:.05em;
+  flex-shrink:0;text-align:right;
+}
+.stanza-dots{display:flex;gap:4px;justify-content:flex-end;margin-top:4px}
+.sdot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.2)}
+.sdot.on{background:var(--gold)}
+
+/* Lyrics body */
+.lyrics-body{
+  flex:1;display:flex;flex-direction:column;
+  overflow:hidden;gap:0;
+}
+/* Two-language layout */
+.stanza-block{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  flex:1;gap:0;
+  padding:0 clamp(4px,2vw,24px);
+}
+.lang-esp,.lang-jp{
+  display:flex;flex-direction:column;align-items:center;
+  width:100%;
+}
+.lang-esp{margin-bottom:clamp(4px,1.2vh,14px)}
+.lang-divider{
+  width:min(200px,40vw);height:1px;
+  background:linear-gradient(to right,transparent,rgba(201,168,76,.3),transparent);
+  margin:clamp(3px,.8vh,10px) auto;flex-shrink:0;
+}
+
+.ll{
+  font-family:"IM Fell English",serif;
+  text-align:center;line-height:1.45;
+  opacity:0;transform:translateY(8px);
+  transition:opacity .45s ease,transform .45s ease;
+  white-space:pre-wrap;word-break:break-word;max-width:100%;
+}
+.ll.v{opacity:1;transform:translateY(0)}
+.ll-jp{font-family:"Noto Serif JP",serif;line-height:1.5}
+.ll-esp{color:var(--esp)}
+.ll-jp{color:var(--jpn)}
+.ll-chorus-esp{font-style:italic;color:var(--gold3)}
+.ll-chorus-jp{font-style:italic;color:var(--jpn2)}
+.ll-loading{color:var(--muted);font-style:italic}
+.ll-err{color:var(--red)}
+
+/* ruby */
+ruby{ruby-align:center}
+rt{font-size:.4em;color:rgba(168,216,176,.55);font-family:"Noto Sans JP",sans-serif;font-weight:300}
+
+/* footer */
+.slide-footer{
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;gap:1%;
+  padding-top:clamp(4px,1vh,8px);
+}
+.sf-line{flex:1;max-width:60px;height:1px;background:linear-gradient(to right,transparent,var(--gold));opacity:.2}
+.sf-line.r{background:linear-gradient(to left,transparent,var(--gold))}
+.sf-pg{font-family:"Cinzel",serif;font-size:clamp(.5rem,1.2vw,.75rem);color:var(--gold);opacity:.35;letter-spacing:.06em}
+
+/* ─── NAV ─── */
+#nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:center;
+  gap:clamp(6px,2vw,14px);
+  padding:clamp(6px,1.3vh,12px) clamp(8px,2vw,20px);
+  background:linear-gradient(transparent,rgba(6,14,24,.96));
+}
+.nbtn{
+  background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);
+  color:var(--gold2);padding:clamp(5px,1vh,9px) clamp(12px,3vw,24px);
+  cursor:pointer;font-family:"Cinzel",serif;
+  font-size:clamp(.6rem,1.6vw,.9rem);letter-spacing:.08em;
+  transition:background .2s;border-radius:var(--radius);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.nbtn:active,.nbtn:hover{background:rgba(201,168,76,.28)}
+.nbtn:disabled{opacity:.18;cursor:default}
+#pg{font-family:"Cinzel",serif;font-size:clamp(.6rem,1.5vw,.85rem);color:var(--muted);letter-spacing:.04em;min-width:70px;text-align:center}
+
+/* ─── SIDEBAR ─── */
+#overlay{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.6);display:none}
+#overlay.show{display:block}
+#sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:min(320px,88vw);
+  background:rgba(6,14,24,.98);border-right:1px solid rgba(201,168,76,.18);
+  z-index:30;transform:translateX(-100%);transition:transform .32s ease;
+  display:flex;flex-direction:column;
+}
+#sidebar.open{transform:translateX(0)}
+#sb-hdr{
+  flex-shrink:0;padding:clamp(10px,2vh,16px) clamp(12px,3vw,18px);
+  border-bottom:1px solid rgba(201,168,76,.15);
+  background:rgba(6,14,24,.98);
+}
+#sb-hdr-title{font-family:"Cinzel",serif;font-size:clamp(.8rem,2vw,.95rem);color:var(--gold);letter-spacing:.1em}
+#sb-search{
+  margin-top:8px;width:100%;background:rgba(255,255,255,.06);
+  border:1px solid rgba(201,168,76,.2);color:var(--white);
+  padding:7px 12px;font-family:"IM Fell English",serif;font-size:.85rem;
+  border-radius:var(--radius);outline:none;
+}
+#sb-search::placeholder{color:var(--dim)}
+#sb-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:clamp(7px,1.4vh,11px) clamp(12px,3vw,18px);
+  cursor:pointer;transition:background .15s;
+  border-left:2px solid transparent;
+}
+.sb-item:hover{background:rgba(201,168,76,.07)}
+.sb-item.cur{border-left-color:var(--gold);background:rgba(201,168,76,.05)}
+.sb-num{font-family:"Cinzel",serif;font-size:.8rem;color:var(--gold);width:36px;flex-shrink:0}
+.sb-title-esp{font-family:"IM Fell English",serif;font-size:.82rem;color:var(--white);display:block}
+.sb-title-jp{font-family:"Noto Serif JP",serif;font-size:.68rem;color:var(--jpn);display:block;margin-top:1px}
+.sb-has-jp{width:6px;height:6px;border-radius:50%;background:var(--jpn2);flex-shrink:0;opacity:.7}
+.sb-no-jp{width:6px;height:6px;border-radius:50%;border:1px solid var(--muted);flex-shrink:0;opacity:.4}
+
+/* ─── BROWSE VIEW ─── */
+#browse-view{
+  position:absolute;inset:0;overflow-y:auto;
+  display:flex;flex-direction:column;gap:0;
+  padding:0 0 60px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+#browse-view.show{opacity:1;pointer-events:auto}
+.browse-section{padding:clamp(8px,2vh,16px) clamp(12px,3vw,24px) 0}
+.browse-section-title{
+  font-family:"Cinzel",serif;font-size:.7rem;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid rgba(201,168,76,.1);
+  padding-bottom:6px;margin-bottom:8px;
+}
+.browse-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(clamp(140px,22vw,200px),1fr));
+  gap:clamp(6px,1.5vw,10px);
+}
+.browse-card{
+  background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.12);
+  padding:clamp(8px,1.5vh,12px) clamp(8px,1.5vw,12px);
+  cursor:pointer;transition:all .2s;border-radius:var(--radius);
+  position:relative;
+}
+.browse-card:hover{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.4)}
+.bc-num{font-family:"Cinzel",serif;font-size:.75rem;color:var(--gold);margin-bottom:3px}
+.bc-title{font-family:"IM Fell English",serif;font-size:clamp(.72rem,1.6vw,.88rem);color:var(--white);line-height:1.3}
+.bc-jp{font-family:"Noto Serif JP",serif;font-size:.62rem;color:var(--jpn);margin-top:3px}
+.bc-jp-dot{position:absolute;top:6px;right:6px;width:5px;height:5px;border-radius:50%;background:var(--jpn2);opacity:.6}
+
+/* ─── SEARCH RESULTS ─── */
+#search-results{
+  position:absolute;top:100%;left:0;right:0;z-index:50;
+  background:rgba(6,14,24,.98);border:1px solid rgba(201,168,76,.25);
+  max-height:300px;overflow-y:auto;border-radius:0 0 var(--radius) var(--radius);
+}
+.sr-item{
+  padding:clamp(6px,1.2vh,10px) clamp(10px,2vw,16px);
+  cursor:pointer;transition:background .15s;
+  display:flex;align-items:center;gap:10px;
+}
+.sr-item:hover{background:rgba(201,168,76,.1)}
+.sr-num{font-family:"Cinzel",serif;font-size:.75rem;color:var(--gold);width:30px;flex-shrink:0}
+.sr-title-esp{font-family:"IM Fell English",serif;font-size:.85rem;color:var(--white)}
+.sr-title-jp{font-family:"Noto Serif JP",serif;font-size:.7rem;color:var(--jpn);margin-top:1px}
+
+/* ─── LOADING OVERLAY ─── */
+#loading{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(6,14,24,.85);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+#loading.show{opacity:1;pointer-events:auto}
+.loading-spinner{
+  width:32px;height:32px;border:2px solid rgba(201,168,76,.2);
+  border-top-color:var(--gold);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:"Cinzel",serif;font-size:.8rem;color:var(--muted);letter-spacing:.1em}
+
+/* ─── EDITOR PANEL ─── */
+#editor-panel{
+  position:fixed;right:0;top:0;bottom:0;width:min(400px,90vw);
+  background:rgba(6,14,24,.99);border-left:1px solid rgba(201,168,76,.18);
+  z-index:40;transform:translateX(100%);transition:transform .32s ease;
+  display:flex;flex-direction:column;
+}
+#editor-panel.open{transform:translateX(0)}
+#ep-hdr{
+  flex-shrink:0;padding:12px 16px;
+  border-bottom:1px solid rgba(201,168,76,.15);
+  display:flex;align-items:center;justify-content:space-between;
+}
+#ep-hdr-title{font-family:"Cinzel",serif;font-size:.85rem;color:var(--gold);letter-spacing:.08em}
+#ep-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:2px 6px}
+#ep-close:hover{color:var(--gold)}
+#ep-body{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+#ep-body label{font-family:"Cinzel",serif;font-size:.7rem;color:var(--muted);letter-spacing:.08em;display:block;margin-bottom:4px}
+#ep-body textarea{
+  width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(201,168,76,.2);
+  color:var(--white);padding:8px 10px;font-family:"Noto Sans JP",sans-serif;font-size:.8rem;
+  resize:vertical;border-radius:var(--radius);outline:none;min-height:80px;
+}
+#ep-body textarea:focus{border-color:var(--gold)}
+#ep-save{
+  margin:0 16px 16px;
+  background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);
+  color:var(--gold2);padding:10px;cursor:pointer;
+  font-family:"Cinzel",serif;font-size:.8rem;letter-spacing:.1em;
+  border-radius:var(--radius);transition:background .2s;
+}
+#ep-save:hover{background:rgba(201,168,76,.3)}
+
+/* ─── PETAL ─── */
+.petal{position:fixed;width:7px;height:10px;background:rgba(168,216,176,.08);border-radius:50% 0 50% 0;pointer-events:none;z-index:1;animation:pfall linear infinite}
+@keyframes pfall{0%{transform:translateY(-20px) rotate(0deg);opacity:0}8%{opacity:.6}90%{opacity:.1}100%{transform:translateY(110vh) rotate(660deg);opacity:0}}
+
+/* ─── UTIL ─── */
+.hidden{display:none!important}
+@media(max-width:480px){
+  .hymn-hdr{flex-wrap:wrap}
+  .hymn-num-badge{font-size:1.8rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<canvas id="bgc"></canvas>
+
+<!-- Frame -->
+<div class="frame-line fl-t"></div>
+<div class="frame-line fl-b"></div>
+<div class="frame-line fl-l"></div>
+<div class="frame-line fl-r"></div>
+<div class="corner-mark cm-tl"></div>
+<div class="corner-mark cm-tr"></div>
+<div class="corner-mark cm-bl"></div>
+<div class="corner-mark cm-br"></div>
+
+<!-- Loading -->
+<div id="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando himno...</div></div>
+
+<!-- Sidebar -->
+<div id="overlay"></div>
+<div id="sidebar">
+  <div id="sb-hdr">
+    <div id="sb-hdr-title">Himnario Adventista — 希望の賛美歌</div>
+    <input id="sb-search" type="text" placeholder="Buscar himno...">
+  </div>
+  <div id="sb-list"></div>
+</div>
+
+<!-- Editor -->
+<div id="editor-panel">
+  <div id="ep-hdr">
+    <span id="ep-hdr-title">Editar Japonés</span>
+    <button id="ep-close">×</button>
+  </div>
+  <div id="ep-body">
+    <div><label>Número de Himno</label><input id="ep-num" type="number" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(201,168,76,.2);color:var(--white);padding:6px 10px;font-family:monospace;border-radius:3px;outline:none" readonly></div>
+    <div><label>Título en Japonés</label><input id="ep-title-jp" type="text" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(201,168,76,.2);color:var(--white);padding:6px 10px;font-family:'Noto Sans JP',sans-serif;border-radius:3px;outline:none"></div>
+    <div><label>Letra en Japonés (cada línea = una línea, verso separado por línea en blanco)</label><textarea id="ep-lyrics-jp" rows="10"></textarea></div>
+    <div style="font-size:.7rem;color:var(--muted);font-family:Cinzel,serif;letter-spacing:.05em">Los cambios se guardan localmente en este dispositivo.</div>
+  </div>
+  <button id="ep-save">Guardar Cambios</button>
+</div>
+
+<!-- App -->
+<div id="app">
+  <!-- Header -->
+  <div id="hdr">
+    <button id="menu-btn">☰</button>
+    <div id="search-wrap">
+      <input id="search" type="text" placeholder="Buscar por número, título...">
+      <div id="search-results"></div>
+    </div>
+    <div id="hdr-title">Himnario</div>
+    <div id="lang-toggle">
+      <button class="lt-btn on" data-lang="esp" title="Español">ESP</button>
+      <button class="lt-btn on" data-lang="jpn" title="日本語">JPN</button>
+    </div>
+    <div id="hdr-num">— / 695</div>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+    <!-- Presentation view -->
+    <div id="present-view">
+      <div id="slides-wrap" style="position:absolute;inset:0">
+        <!-- Welcome slide -->
+        <div class="slide welcome-slide active" id="slide-welcome">
+          <div class="ws-title">Himnario Adventista</div>
+          <div class="ws-jp">希望の賛美歌</div>
+          <div class="ws-rule"></div>
+          <div class="ws-sub">Iglesia Adventista Japonesa — Paraguay</div>
+          <div class="ws-sub" style="margin-top:.5em;font-size:.85em">Seleccioná un himno del índice ☰</div>
+          <div class="cross-icon"></div>
+        </div>
+        <!-- Dynamic hymn slides injected here -->
+      </div>
+    </div>
+    <!-- Browse view -->
+    <div id="browse-view"></div>
+  </div>
+
+  <!-- Nav -->
+  <div id="nav">
+    <button class="nbtn" id="btn-prev">← Ant</button>
+    <button class="nbtn" id="btn-browse" title="Ver índice">⊞</button>
+    <span id="pg">— / 695</span>
+    <button class="nbtn" id="btn-edit" title="Editar japonés" style="font-size:.7rem">✎ JP</button>
+    <button class="nbtn" id="btn-next">Sig →</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════
+const HYMNAL_DATA = {"esp_titles":{"1":"Cantad Alegres al Señor","2":"Santo, Santo, Santo","3":"Alabad al Señor","4":"Alabad al Señor","5":"Alabanzas sin Cesar","6":"¡Hosanna!","7":"Oh Dios, Mi Soberano Rey","8":"¡Suenen Dulces Himnos!","9":"Alabemos al Señor","10":"Alaba al Dios de Abraham","11":"Alma, Bendice al Señor","12":"Todos Juntos Reunidos","13":"Al Dios Invisible","14":"Engrandecido Sea Dios","15":"Loámoste, ¡Oh Dios!","16":"A Nuestro Padre Dios","17":"Oh Padre, Eterno Dios","18":"Load al Padre","19":"Padre Nuestro","20":"A Dios, el Padre Celestial","21":"Gloria Sea al Padre","22":"Jehová Está en Su Santo Templo","23":"¡Silencio! ¡Silencio!","24":"Imploramos Tu Presencia","25":"Siento la Presencia del Señor","26":"Aquí Reunidos","27":"Unid Vuestras Voces","28":"Jesús Es el Rey Sublime","29":"Oh Qué Amigo Nos Es Cristo","30":"Al Mundo Paz","31":"Oh Santo Espíritu","32":"Ven, Santo Espíritu","33":"Penetra, Espíritu Divino","34":"Ven, Espíritu de Dios","35":"Espíritu de Dios","36":"Espíritu Santo, Desciende","37":"Oh Fuente de la Vida","38":"Ven Santo Espíritu de Dios","39":"Ven, Oh Espíritu de Dios","40":"Divino Espíritu","41":"La Biblia es la Palabra de Dios","42":"La Santa Biblia","43":"Jesús es Todo","44":"Cristo el Señor Resucitó","45":"El Ha Resucitado","46":"Cristo Vive","47":"Él Vive","48":"Resucitó","49":"Victoria en Cristo","50":"En Cristo Hay Gozo","51":"Día Se Acaba Ya","52":"Tarde Ya Va Siendo","53":"Todo el Día","54":"Tarde y Mañana","55":"En la Cruz de Cristo Estoy","56":"Más Allá del Río","57":"El Día de Reposo","58":"El Día del Señor","59":"Día Sagrado","60":"El Día de Reposo","61":"¡Oh Día de Descanso!","62":"El Sábado Feliz","63":"El Sábado es de Dios","64":"Bienvenido el Sábado","65":"Bienvenido Día de Reposo","66":"Día Feliz","67":"El Día Más Hermoso","68":"Sábado de Reposo","69":"Venid a Adorar","70":"Dios Nos Ha Dado","71":"Alabad al Señor","72":"Alabad a Jehová","73":"Cantad a Jehová","74":"Canta, Oh Sión","75":"Cantad un Nuevo Cántico","76":"El Cielo Canta Alegría","77":"¡Oh, Cuánto Amo a Cristo!","78":"Cristo es el Camino","79":"Mi Cristo es Rey","80":"Cristo Vino al Mundo","81":"Sublime es el Amor","82":"El Amor de Cristo","83":"Amor de Cristo","84":"El Amor de Dios","85":"Dios es Amor","86":"Maravilloso Amor","87":"Eterno es su Amor","88":"Cuán Grande Amor","89":"Amor Que no Me Dejas","90":"Precioso es Jesús","91":"Cristo, el Camino","92":"Nuestro Cristo","93":"Hermoso Cristo","94":"Ven a Cristo","95":"Llena Mi Copa, Señor","96":"Cristo Todo es Para Mí","97":"Cristo es Todo","98":"Cristo Jesús, Mi Señor","99":"El Señor Es Mi Fuerza","100":"Mi Dios","101":"Creo en Cristo","102":"Cristo Me Ama","103":"Amo a Cristo","104":"Cerca, Más Cerca","105":"Oye Mis Preces","106":"Sublime Gracia","107":"Su Gracia es Mejor","108":"Maravillosa Gracia","109":"Gracia Admirable","110":"Por Tu Gracia","111":"Oh, la Profunda Gracia","112":"Gracia en Todo","113":"Gracia Maravillosa","114":"Cada Día Con Jesús","115":"Amemos al Señor","116":"Soy Tuyo, Mi Señor","117":"Amor Sin Igual","118":"Oh Amor Divino","119":"Sublime Gracia","120":"El Amor de Dios es Más Amplio","121":"Tuyo Soy, Señor","122":"La Esperanza del Cristiano","123":"Viva el Señor","124":"Vive Jesús","125":"Solo Cristo","126":"En Belén","127":"Noche de Paz","128":"Los Ángeles Cantaron","129":"Oid el Coro Celestial","130":"Nació el Salvador","131":"Nació Jesús el Salvador","132":"Oh Venid Fieles Todos","133":"Pastores a Belén","134":"Nació en un Establo","135":"Los Reyes de Oriente","136":"Jesús Nació","137":"Oh Aldehuela de Belén","138":"Vino Jesús","139":"Glorias Cantad","140":"Los Ángeles Anunciaron","141":"Gozo, Gozo, Grande Gozo","142":"¿Qué Niño Es Este?","143":"Noche de Paz","144":"Tal Como Soy","145":"Jesús, Mi Señor","146":"Solo en Cristo","147":"A Jesús","148":"Cristo Viene","149":"El Rey Viene","150":"Viene el Señor","151":"Maranata","152":"Pronto Viene","153":"Pronto Viene Jesús","154":"Cuando Suene la Trompeta","155":"El Señor Vendrá","156":"Jesús Viene Pronto","157":"Yo Espero la Mañana","158":"Cuán Grande es Él","159":"Grande Eres Tú","160":"Oh Señor Mi Dios","161":"Grande es Tu Fidelidad","162":"Fidelidad","163":"Tu Gracia es Grande","164":"Oh Dios de Gracia","165":"El Gran Amor","166":"La Cruz de Cristo","167":"La Sangre de Jesús","168":"Esa Sangre Preciosa","169":"Al Pie de la Cruz","170":"La Cruz Gloriosa","171":"Maravillas de la Cruz","172":"En la Cruz","173":"Por la Cruz","174":"Hay Poder en la Sangre","175":"¡Oh, la Sangre de Cristo!","176":"La Redención","177":"Redimido Soy","178":"Sublime es el Amor","179":"El Amor que me Redimió","180":"Amor Redentor","181":"¿Le Importa a Cristo?","182":"Cristo Cuida de Mí","183":"Jesús Cuida de Mí","184":"El Buen Pastor","185":"Cristo es Todo Para Mí","186":"Cuánto me Ama Cristo","187":"Me Ama Cristo","188":"Seguro en los Brazos de Jesús","189":"En Sus Brazos me Cargará","190":"Jesús Me Ama","191":"Tú Eres mi Buen Pastor","192":"Oh Qué Amigo","193":"Amigo Tenemos en Cristo","194":"Amigo Fiel","195":"Cuéntame la Historia","196":"La Historia de Jesús","197":"Cuánto me Ama el Señor","198":"Oh Qué Amigo es Jesús","199":"Qué Lindo es Cristo","200":"Glorificado Jesús","201":"Solo en Cristo","202":"Camina, Pueblo de Dios","203":"Dios de la Historia","204":"Ven a Nuestro Mundo","205":"Dios Está Aquí","206":"Aquí en el Monte","207":"¡Aleluya! Alabad a Dios","208":"Cristo el Señor","209":"Con Voz Triunfante","210":"Digno Eres Tú","211":"Tu Fidelidad","212":"Cristo Venció","213":"Aleluya","214":"¡Aleluya!","215":"Bendito el Señor","216":"Bendícele Alma Mía","217":"Bendice Alma Mía","218":"Cristo Victorioso","219":"Hosanna","220":"Dios es Fiel","221":"Cristo Reina","222":"Cristo es Rey","223":"Coronad al Rey","224":"La Corona del Rey","225":"El Rey de Reyes","226":"¡Rey de Reyes!","227":"El Señor es Rey","228":"Hosanna al Hijo de David","229":"¡Cuán Bello es el Señor!","230":"A Dios Demos Gloria","231":"Gloria a Dios","232":"La Misión","233":"Yo Soy el Pan de Vida","234":"El Pan de Vida","235":"Señor de la Mies","236":"Cristo Salva","237":"Hay Esperanza","238":"Su Maravilloso Amor","239":"Rescatad a los Perdidos","240":"La Viña del Señor","241":"Venid a Cristo","242":"Ven a Jesús","243":"Venid, Venid a Cristo","244":"Cristo te Llama","245":"El Buen Pastor Llama","246":"Dios de Paz","247":"Oh Pueblo de Dios","248":"Hacia la Meta","249":"¡Alabadle! ¡Alabadle!","250":"Oh, Que Tuviera Lenguas Mil","251":"Jesús Me Ama","252":"El Buen Pastor","253":"En Jesús Confía","254":"Milagros","255":"La Rosa de Sarón","256":"Cantad el Amor","257":"Amor Inefable","258":"Momento a Momento","259":"El Amante Pastor","260":"Historia de Amor","261":"Unidos en Cristo","262":"Gozo Celestial","263":"El Abundante Amor","264":"Cuenta Tus Bendiciones","265":"El Amor de Dios es Maravilloso","266":"Mi Gozo","267":"Jesús Es Mi Rey Soberano","268":"Vivo con Jesús","269":"Viene a Nosotros","270":"Softly and Tenderly","271":"Regresa al Hogar","272":"El Salvador Aguarda","273":"Pon Tus Ojos en Cristo","274":"Cristo Está Llamando","275":"Sígueme","276":"Ven a Jesús","277":"Ven Todos los que Estáis","278":"Padre Celestial","279":"Abre la Puerta","280":"Mi Señor y yo","281":"Nueva Visión","282":"La Gracia del Señor","283":"El Amor de Dios","284":"Lo Que Cristo Hizo","285":"Cerca de la Cruz","286":"Hay Gozo en mi Alma","287":"Gracia Maravillosa","288":"Vengo, Señor","289":"Mi Fe ha Hallado Descanso","290":"Poder en la Sangre","291":"Al Pie de la Cruz","292":"¡Redimido!","293":"Perdonado","294":"¡Redimido!","295":"Arrepentido Vengo","296":"El Calvario","297":"¿Estabas Allí?","298":"La Vieja Rugged Cross","299":"Mi Fe Mira a Ti","300":"Cuán Firme Cimiento","301":"Creo","302":"Mi Alma Amada","303":"Cuan Firme es el Fundamento","304":"Mi Esperanza Firme Está","305":"Confío en el Señor","306":"Firmes y Adelante","307":"Por Todos los Santos","308":"Mi Escudo eres Tú","309":"Me Rindo a Ti","310":"Confío en Ti","311":"El Nombre de Jesús","312":"Bajo Sus Alas","313":"En los Brazos de Jesús","314":"Todo el Camino","315":"Dios Cuida de Ti","316":"El Señor Es Mi Pastor","317":"Castillo Fuerte","318":"Cerca del Corazón de Dios","319":"Hay una Senda","320":"Está Bien con mi Alma","321":"Refugio en la Tormenta","322":"En Cristo Permanezco","323":"Amor Celestial Permanente","324":"Guíame, Oh Señor","325":"Apoyado en el Eterno","326":"Plenamente Confiado","327":"Con Jesús en Cualquier Lugar","328":"Escondiéndome en Ti","329":"Confía y Obedece","330":"Cuán Dulce es Fiar","331":"Roca de la Eternidad","332":"Más Cerca del Señor","333":"Padre Guardaños","334":"Mi Jesús, Yo te Amo","335":"El Señor es mi Pastor","336":"Jesús el Buen Pastor","337":"Mi Pastor Suplirá","338":"El Señor es mi Pastor","339":"Salvador, como un Pastor","340":"Oh Fuente de Todo Bien","341":"Preciosa Joya","342":"Cristo mi Roca","343":"Jesús Todo lo Es Para Mí","344":"Más Cerca, Dios, de Ti","345":"Oh Dios Todopoderoso","346":"Él me Guiará","347":"Amante Jesús","348":"Jesús Amante de mi Alma","349":"Alma, Sé Tranquila","350":"Te Necesito","351":"Mi Señor y Yo","352":"Dulce Hora de Oración","353":"¡Oh, Que Pudiera Yo Orar!","354":"Hay un Precioso Manantial","355":"Señor, Enséñame a Orar","356":"Para ti Estoy Orando","357":"La Oración de la Mañana","358":"No me Pases","359":"Oración","360":"Guíame, Oh Señor","361":"El Nombre de Jesús","362":"Haz lo Que Quieras de Mí","363":"Soy Tuyo, Señor","364":"¿A Quién Sino a Ti?","365":"¡Señor, Te Llamo!","366":"Más Amor a Ti","367":"¿Quién en Pos de Cristo Va?","368":"Levántate","369":"Solo Cristo Glorificar","370":"Pureza","371":"El Corazón de Jesús","372":"Hijo de Dios","373":"Un Vaso Roto","374":"Mi Dios y Mi Todo","375":"Quisiera Ser como Jesús","376":"Cargado de Penas","377":"Bálsamo en Galaad","378":"Día a Día","379":"De lo Profundo","380":"¿Le Importa a Jesús?","381":"En el Mar de la Vida","382":"¡Oh Maestro!","383":"Cautívame, Señor","384":"¡Oh, Cuánto le Amo!","385":"El Amor Fraternal","386":"Jesús Todo lo Es","387":"Dios Sea con Vosotros","388":"Unidos en Cristo","389":"Oh Padre Eterno","390":"Las Antiguas Costumbres","391":"Sion Nos Convoca","392":"Las Mujeres que Sirvieron","393":"Como Yo Soy","394":"Todas las Cosas Bellas","395":"¿Nos Reuniremos?","396":"Sé Fuerte y Valiente","397":"La Montaña Verde","398":"La Pradera Verde","399":"Un Canto Nuevo","400":"El Amor de Jesús","401":"De Corazón","402":"Tejadillo Rojo","403":"Las Hojas Rojas","404":"¡Venid!","405":"Gloria al Señor","406":"Dios Sabe la Razón","407":"Enviados por Dios","408":"Oh Señor Jesús","409":"Jerusalén, Mi Hogar Feliz","410":"El Dulce Más Allá","411":"La Patria Celestial","412":"¡Qué Mañana Gloriosa!","413":"Verle","414":"La Vida Eterna","415":"La Ciudad Celestial","416":"Las Mansiones Eternas","417":"La Paz del Cielo","418":"Marcharemos","419":"El Río de la Vida","420":"Junto al Río Cristalino","421":"Coronación","422":"La Ciudad Eterna","423":"El Toque Final","424":"El Señor Viene","425":"Vigilad","426":"La Morada Celestial","427":"La Trompeta Final","428":"Junto al Río","429":"Vendrá Jesús","430":"Las Señales","431":"El Arrebatamiento","432":"¿Nos Reuniremos?","433":"Velad, Que el Señor Viene","434":"El Señor Viene Pronto","435":"Maranata","436":"Cristo Viene","437":"Oh Qué Mañana","438":"Quiero Ver a Jesús","439":"El Día Glorioso","440":"Veré a mi Rey","441":"Las Bodas del Cordero","442":"Cuando el Rollo Sea Abierto","443":"¿Está mi Nombre Escrito?","444":"Solo Amor","445":"Oh Tierra Feliz","446":"Ver a Jesús","447":"Tierra Hermosa","448":"El Hogar Eterno","449":"Mi Hogar Celestial","450":"¡Señor, Ven!","451":"Maranata, Ven Señor","452":"Yo Anhelo Verte","453":"Nos Veremos en el Río","454":"La Esperanza Bienaventurada","455":"Mi Esperanza","456":"Mi Señor y Yo","457":"Amo Contar la Historia","458":"Más Amor a Ti","459":"Maravillosa Gracia","460":"Gracia Sorprendente","461":"Queda Quieta mi Alma","462":"Bendita Certeza","463":"Seguro en Cristo","464":"Plena Seguridad","465":"Escuché la Voz de Cristo","466":"Amor Fraternal","467":"Dulce Comunión","468":"Profundo Amor","469":"Apoyados en el Eterno","470":"Hoy Hay Gozo","471":"Gozo Inefable","472":"Profundo Gozo","473":"Más Cerca, Dios, de Ti","474":"Con Jesús","475":"Hay Bálsamo en Galaad","476":"El Dulce Señor","477":"Venid Desconsolados","478":"Dulce Hora de Oración","479":"Orando Siempre","480":"Amado Señor","481":"Amado Señor","482":"Cuando Ora Mi Señor","483":"Te Necesito","484":"Sin Ti No Puedo","485":"Solo en Ti","486":"Solo Tú, Señor","487":"Hermoso Jesús","488":"Señor, yo te Amo","489":"Jesús Amante","490":"Jesús Mi Amigo","491":"Oh Qué Amigo Divino","492":"Como Jesús","493":"Más Cerca de Ti","494":"Más Semejante a Cristo","495":"Cerca del Corazón de Dios","496":"Mi Redentor","497":"Cuántas Gracias","498":"En Quietud","499":"Cuán Dulce es Fiar","500":"Dulce Paz","501":"Paz Perfecta","502":"Sol de Mi Alma","503":"Paz Interior","504":"Profunda Paz","505":"Paz Que Sobrepasa","506":"Castillo Fuerte","507":"Momento a Momento","508":"Con Jesús","509":"Fundamento Firme","510":"Inquebrantable","511":"Confianza","512":"Fe","513":"En Amor Celestial","514":"Más Allá de la Nube","515":"Ancla del Alma","516":"Todo el Camino","517":"Mi Fe Mira a Ti","518":"Confío en Ti","519":"Mi Fe","520":"Por Fe","521":"Pelea la Buena Batalla","522":"Perseverando","523":"Mi Fe Ha Hallado","524":"Qué Dulce es Confiar","525":"Escondiéndome en Ti","526":"En el Señor","527":"Mi Refugio","528":"Refugio en la Tormenta","529":"Bajo Sus Alas","530":"Está Bien","531":"Victoria","532":"Día a Día","533":"Guiado por Él","534":"Fuerza en la Debilidad","535":"Confío en Ti Señor","536":"Con Paso Firme","537":"Él me Guiará","538":"Su Mano me Guía","539":"Síguele","540":"Confiando en Él","541":"Mi Señor me Guía","542":"Él Cuida de Mí","543":"No me Dejará","544":"Seguro","545":"Como un Pastor","546":"El Señor me Cuida","547":"Protegido por Él","548":"Bajo Sus Alas","549":"El Pastor Amoroso","550":"Mi Buen Pastor","551":"El Señor me Pastorea","552":"El Señor es mi Pastor","553":"Verde Pradera","554":"Aguas de Reposo","555":"El Valle","556":"Su Mesa","557":"Bondad y Misericordia","558":"La Casa del Señor","559":"Ahora Demos Gracias","560":"Que Vivan Todas las Cosas","561":"Sembrando","562":"El Campo del Señor","563":"La Siembra","564":"La Cosecha","565":"El Labrador","566":"La Mies","567":"Señor, Haz Tu Voluntad","568":"Hazme Cautivo","569":"No me Pases","570":"Búscame, Señor","571":"Lávame","572":"Lo Mejor para el Maestro","573":"Mi Todo a Jesús","574":"¡Oh Maestro!","575":"Consagración","576":"Entrega Total","577":"Todo por Jesús","578":"Todo para Ti","579":"Señor, Tómame","580":"Entregado a Ti","581":"Solo por Ti","582":"Solo para Cristo","583":"Vivir para Jesús","584":"Por Él Vivir","585":"Cristo en Mí","586":"Su Vida en Mí","587":"El Fruto del Espíritu","588":"Transformado","589":"Santificación","590":"Confía y Obedece","591":"Camina con Dios","592":"Obediencia Gozosa","593":"Siguiendo a Cristo","594":"En su Camino","595":"El Camino del Señor","596":"Andar con Cristo","597":"La Senda Angosta","598":"El Camino Recto","599":"Guíame","600":"Dirígeme","601":"Llevar la Cruz","602":"La Cruz Diaria","603":"Cargando la Cruz","604":"Siguiendo a Jesús","605":"Discipulado","606":"Siguiendo sus Pasos","607":"Sus Huellas","608":"En sus Pisadas","609":"La Misión","610":"Enviados","611":"Id por Todo el Mundo","612":"La Gran Comisión","613":"Testigos","614":"Proclamad","615":"Levántate, Iglesia de Dios","616":"La Iglesia Militante","617":"La Iglesia Triunfante","618":"¡De Pie!","619":"Soldados de Cristo","620":"La Armadura de Dios","621":"Amados, Guardaos","622":"La Promesa","623":"Unidos en Amor","624":"El Lazo de Amor","625":"Lazos Fraternales","626":"La Comunidad","627":"El Cuerpo de Cristo","628":"La Iglesia","629":"La Congregación","630":"El Pueblo de Dios","631":"Somos Uno","632":"La Familia de Dios","633":"Hermanos en Cristo","634":"Comprometidos","635":"Dedicación","636":"La Entrega","637":"El Hijo de Dios","638":"El Cristo","639":"Nuestro Salvador","640":"El Redentor","641":"El Mesías","642":"El Cordero","643":"El Señor Jesús","644":"Mi Salvador","645":"Mi Redentor","646":"Mi Cristo","647":"Mi Señor","648":"Mi Dios","649":"Tú Eres Señor","650":"Dios Mío","651":"Solo Tú","652":"El Amor en el Hogar","653":"Guíalos Señor","654":"La Familia Cristiana","655":"El Hogar Cristiano","656":"Amor Puro","657":"Amor Eterno","658":"El Vínculo del Amor","659":"La Gracia de Cristo","660":"Gloria sea al Padre","661":"Santo, Santo, Santo","662":"Aleluya","663":"Amén, Aleluya","664":"Gloria a Dios","665":"Hosanna","666":"Santo es el Señor","667":"Glorificado","668":"Toda la Gloria","669":"El Señor te Bendiga","670":"Bendición","671":"La Bendición Aarónica","672":"Vayan con Dios","673":"La Paz de Cristo","674":"La Gracia Sea con Vosotros","675":"Paz y Gracia","676":"La Promesa de Dios","677":"Dios con Vosotros","678":"El Señor te Guarde","679":"Recibe la Bendición","680":"Bendito Seas","681":"La Doxología","682":"Gloria en las Alturas","683":"Jesús Entre Nosotros","684":"Oye Nuestra Oración","685":"Señor, Escúchanos","686":"Oramos a Ti","687":"Recibe Nuestra Oración","688":"Acepta Nuestra Alabanza","689":"Santo Eres Tú","690":"Te Alabamos","691":"En Tu Presencia","692":"El Señor Está en Su Santo Templo","693":"Padre Todopoderoso","694":"Doxología","695":"Alabemos al Señor"},"top_hymns":{"1":{"title":"Cantad Alegres al Señor","verses":[["Cantad alegres al Señor,","que es nuestro bien y nuestro Dios;","servid a Dios con voz de amor","y con canciones a su honor."],["Con gratitud cantad al Señor,","que es nuestro Dios y nuestro Salvador,","somos su pueblo y él es nuestro Dios,","él nos creó y le damos loor."],["Su amor eterno durará,","a ningún ser él buscará,","de generación en generación","sus fieles hijos guardará."]]},"2":{"title":"Santo, Santo, Santo","verses":[["Santo, Santo, Santo, Señor Omnipotente,","siempre el labio mío loores te dará;","Santo, Santo, Santo, te adoro reverente,","Dios en tres personas, bendita Trinidad."],["Santo, Santo, Santo, en numerosa hueste,","ángeles y santos te adoran sin cesar;","ante ti se postran los que luz celeste,","te alaban y glorifican sin par."],["Santo, Santo, Santo, la inmensa muchedumbre","de ángeles que cumplen tu santa voluntad,","ante ti se postran bañados en tu lumbre","ante aquel que es, que era y que vendrá."],["Santo, Santo, Santo, Señor Omnipotente,","toda tu obra tu nombre ensalzará;","Santo, Santo, Santo, te adoro reverente,","Dios en tres personas, bendita Trinidad."]]},"3":{"title":"Alabad al Señor","verses":[["Alabad al Señor, el Todopoderoso,","Rey es él de la creación,","en sus alas plateadas te lleva gozoso,","y te da su amorosa protección."],["Alabad al Señor, que con mano potente","os sustenta en todo lugar;","por su Espíritu Santo que en vuestras almas siente,","os concede divino bienestar."],["Alabad al Señor, con el canto sonoro,","con el arpa y el salterio también;","todos juntos formad armonioso coro,","y cantad del Señor todo el bien."]]},"17":{"title":"Da Gloria al Señor","verses":[["Da gloria al Señor, de rodillas adórale,","en la hermosura de su santidad,","tu plena obediencia cual oro ofreciéndole,","con el incienso de grata humildad."],["La carga del mal deposita hoy a sus pies,","la llevará sobre su corazón;","tus penas te quita, limpiando tus lágrimas,","guiando tus pies a mayor bendición."],["En sus santos atrios adonde te convida,","aunque eres pobre no temas entrar;","la firme, constante fe y el puro, sencillo amor:","tales ofrendas pon sobre el altar."],["Y cuando tus dones le entregues a tu Señor,","por su Hijo amado los aceptará;","y tras noche lúgubre habrá aurora espléndida:","gozo, alegría y paz te dará."]]},"20":{"title":"A Dios el Padre Celestial","verses":[["A Dios el Padre celestial,","al Hijo nuestro Redentor,","y al eternal Consolador,","unidos todos alabad."]]},"69":{"title":"Oh Dios, El Nombre Tuyo","verses":[["Oh Dios, el nombre tuyo quiero proclamar,","tu amor y tu poder a todos declarar;","tú eres el camino, la verdad y la luz,","y al que te sigue llevas hasta la cruz."],["Tu gracia me sostiene en todo el caminar,","tu brazo poderoso me puede sustentar;","en ti yo tengo todo: descanso, paz y amor,","bendito y adorado seas, mi Salvador."]]},"77":{"title":"¡Oh, Cuánto Amo a Cristo!","verses":[["¿Me preguntáis qué es lo que tanto quiero?","Diré con gozo lo que amo yo:","es Cristo Jesús, mi Rey y mi Señero,","a quien mi alma con amor cantó."],["Es él mi apoyo cuando flaqueo,","mi fortaleza en la tribulación;","cuando el peligro cerca a mí veo,","él es mi amparo y mi salvación."]]},"95":{"title":"Llena Mi Copa, Señor","verses":[["Llena mi copa, Señor, yo te pido hoy,","en la plenitud de tu Espíritu Santo;","llena mi copa, Señor, hacia ti me voy,","necesito tu gracia y tu manto."]],"chorus":["Llena mi copa, llénala hoy,","llena mi copa, te lo pido, Señor;","ven y llena mi copa,","llena mi copa, Señor."]},"99":{"title":"El Señor Es Mi Fuerza","verses":[["El Señor es mi fuerza y mi escudo,","en él confío y me ayudará;","mi corazón en él se ha refugiado,","su gran poder me sostendrá."],["Cantad al Señor con alegría,","tributadle toda la honra y honor;","reconoced que él es vuestra guía,","alabadle a él, vuestro Salvador."]]},"102":{"title":"Cristo Me Ama","verses":[["Cristo me ama, bien lo sé,","su Palabra me hace ver","que los niños son de aquel","quien es nuestro amigo fiel."],["Cristo me ama, pues murió,","mis pecados él tomó,","las puertas del cielo abrió,","y al pecado condenó."],["Cristo me ama, él es rey,","reina de la eternidad;","cuando al cielo voy a ver,","tendré yo felicidad."]],"chorus":["Sí, Cristo me ama,","sí, Cristo me ama,","sí, Cristo me ama,","la Biblia dice así."]},"119":{"title":"Sublime Gracia","verses":[["Sublime gracia del Señor","que a un infeliz salvó;","fui ciego mas hoy veo yo,","perdido y él me halló."],["Su gracia me enseñó a temer,","mis dudas ahuyentó;","¡Oh, cuán precioso fue a mi ser","cuando él me transformó!"],["Y cuando en Sión por siglos mil","brillando esté cual sol,","yo cantaré por siempre aquí","su amor que me salvó."]]},"144":{"title":"Tal Como Soy","verses":[["Tal como soy, sin más decir,","a ti, Cordero de Dios, a ti,","quien por mis culpas mala aquí,","a ti acudo, Señor."],["Tal como soy, busco tu paz,","para el alma que no la hay;","oh Dios de amor, sin más esperar,","a ti acudo, Señor."],["Tal como soy, tu amor y fe","me aceptan tal cual yo esté;","perdón, limpieza, gozo y fe,","todo lo encuentro en ti."]]},"158":{"title":"Cuán Grande es Él","verses":[["Señor mi Dios, al contemplar los cielos,","el firmamento y las estrellas mil,","al oír tu voz en los potentes truenos","y ver brillar al sol en su cenit."],["Al recorrer los montes y los valles,","y ver las flores, oír el ruiseñor,","al contemplar el río y la cascada,","entonces se engrandece en mí tu amor."],["Cuando recuerdo que en la cruz un día","cargó tu Hijo la deuda del mortal,","y que al vencer la muerte y la agonía,","me ofrece el don de vida celestial."]],"chorus":["¡Cuán grande es él! ¡Cuán grande es él!","Mi corazón entona esta canción:","¡Cuán grande es él! ¡Cuán grande es él!"]},"178":{"title":"Sublime Es el Amor","verses":[["Sublime es el amor de Dios al hombre,","mayor que el oceano sin igual;","su gracia nunca pierde fuerza o nombre,","su luz jamás dejará de brillar."],["Si el cielo fuera pergamino blanco","y el mar pudiera ser el escritor,","no bastaría para escribir el canto","de su eterno, incomparable amor."]]},"252":{"title":"El Buen Pastor","verses":[["El buen pastor mi alma guarda,","nada faltará en verdad;","en frescos prados me hace reposar,","junto a aguas de tranquilidad."],["Aunque por valle tenebroso","caminos peligrosos haya yo,","no temeré peligro ni dolor,","pues el buen pastor está con mí."],["Confortas tú mi alma contigo,","tu vara y tu cayado me da aliento;","y delante de mis enemigos","mi mesa dispones en el viento."]]},"267":{"title":"Jesús Es Mi Rey Soberano","verses":[["Jesús es mi Rey soberano,","mi gozo es cantarle loor;","es Rey, y me ve cual hermano,","es Rey y me llama su amor."],["Dejando su trono de gloria,","me vino a sacar de la red;","ganó mi salud y victoria,","allá en la cruz de El Calvario."],["Me guarda con brazo potente,","en todo camino y lugar;","y alienta mi alma doliente","con su paz que excede a todo hablar."]],"chorus":["¡Le adoro, le adoro,","le alabo, le alabo!","mi Rey, Señor Jesús."]},"300":{"title":"Firmes y Adelante","verses":[["Firmes y adelante, huestes de la fe,","sin temor alguno, que Jesús nos ve;","jefe soberano, Cristo al frente va,","y la regia enseña triunfará."],["Al sagrado nombre de nuestro adalid","tiembla el enemigo y huye de la lid;","él, con su estandarte, nos llevará","y la santa causa triunfará."],["Fuertes en la lucha, más que vencedores,","somos por la gracia de los redentores;","gloria, honor y honra tributad","al que salvación os ha comprado."]],"chorus":["Firmes y adelante,","huestes de la fe,","sin temor alguno,","que Jesús nos ve."]},"304":{"title":"Mi Esperanza Firme Está","verses":[["Mi esperanza firme está","en el Cristo que me amó,","todo lo que necesito","sólo él lo puede dar."],["En el mar tempestuoso","cuando agita el vendaval,","él me guarda y me sostiene,","él me da tranquilidad."],["Y por fin cuando mi vida","llegue a su fiel término,","lo veré cara a cara","al Cordero del Señor."]]},"316":{"title":"El Señor Es Mi Pastor","verses":[["El Señor es mi pastor,","nada me faltará;","en lugares de verdes pastos","me hará descansar."],["Junto a aguas de reposo","él me pastoreará;","confortará mi alma","y me guiará."],["Aunque ande en valle de sombra","de muerte, no temeré;","tú estás conmigo, tu vara","y tu cayado me cuidarán."]]},"338":{"title":"Yo Tengo Gozo en Mi Alma","verses":[["Yo tengo gozo en mi alma hoy,","gozo, gozo, gozo;","desde que el Señor me perdonó","gozo tengo en mi alma."],["Yo tengo paz en mi alma hoy,","paz, paz, paz;","desde que el Señor me perdonó","paz tengo en mi alma."],["Yo tengo amor en mi alma hoy,","amor, amor, amor;","desde que el Señor me perdonó","amor tengo en mi alma."]]},"354":{"title":"Hay Un Precioso Manantial","verses":[["Hay un precioso manantial","de sangre de Emanuel,","que limpia a cada pecador","que se sumerge en él."],["El ladrón moribundo vio","aquel bendito río,","y antes que oscureciese el sol","se hallaba salvo ya."],["Querido Cordero de Dios,","yo soy el pecador,","tú derramaste allí tu sangre","y me lavó Señor."]]},"366":{"title":"En la Cruz","verses":[["En la cruz, en la cruz","do primero vi la luz,","y las manchas de mi alma yo lavé;","fue allí por fe do vi a Jesús,","y siempre feliz con él seré."],["En la cruz el Cordero por mí murió,","mi deuda pagó al morir;","con su sangre me limpió de todo mal,","y puedo ahora a Dios servir."]]},"384":{"title":"¡Oh, Cuánto le Amo!","verses":[["¡Oh, cuánto le amo! ¡oh, cuánto le amo!","¡oh, cuánto le amo a mi Señor!","¡oh, cuánto le amo! ¡oh, cuánto le amo!","¡oh, cuánto le amo a Jesús!"],["Él me salvó en la cruz del Calvario,","pagó mi deuda de mi pecado;","con amor eterno me ha amado,","¡oh, cuánto le amo a Jesús!"]]},"391":{"title":"Sion Nos Convoca","verses":[["Sion nos convoca en la entera unión,","que hay amor fraterno en la comunión;","donde hay amor y fraternidad,","allí está el Señor en su majestad."],["Cuando estamos juntos con amor,","sólo entonces vemos al Señor;","donde hay amor y fraternidad,","allí está el Señor en su majestad."]]},"459":{"title":"Maravillosa Gracia","verses":[["Maravillosa gracia de nuestro amante Dios,","más grande que la falta y que el pecado atroz;","allá en el Calvario Cristo la gracia mostró,","su sangre el precio fue, mi vida rescató."],["Gracia maravillosa, tan grande como el mar,","que lanza mis pecados muy lejos sin cesar;","llegué con mis pecados, me fui perdonado,","¡la gracia de Dios me ha liberado!"]]},"473":{"title":"Más Cerca, Dios, de Ti","verses":[["Más cerca, oh Dios, de ti,","más cerca quiero estar;","mi canto aquí será:","más cerca de ti."],["Aunque la cruz me dé","amargo padecer,","en ella aprendo a ver","que estás cerca de mí."],["Cual Jacob en Betel,","te buscaré a ti;","aunque sufra hoy aquí,","más cerca de ti."]]},"499":{"title":"Cuán Dulce es Fiar en Cristo","verses":[["Cuán dulce es fiar en Cristo","y en sus promesas creer,","esperar su tierna gracia,","su gozo y paz tener."],["Confiar en Jesucristo","es bálsamo gentil,","descanso que el que lucha","no halla en la lid."],["¡Oh, cuánto bien ya tengo","confiando en Jesucristo!","¡Oh, qué gran gozo tiene","el que en él ha creído!"]],"chorus":["Sí, sí, confío yo","en Jesucristo Dios;","confío, sí, confío,","confío yo en Dios."]},"506":{"title":"Castillo Fuerte Es Nuestro Dios","verses":[["Castillo fuerte es nuestro Dios,","defensa y buen escudo;","con su poder nos libra él","en todo trance agudo."],["Con furia y con afán","acósanos Satán;","por armas deja ver","astucia y gran poder;","cual él no hay en la tierra."],["Del Señor la Palabra está","sobre todo exaltada;","el Espíritu y los dones son","por él a nosotros dados."],["Eso sí, que aunque nos quiten","la vida, el bien, el honor,","los hijos, la mujer,","todo esto perecerá,","mas el reino nuestro permanecerá."]]}},"esp_to_jp":{"20":{"jp_num":1,"title_jp":"１．あめつちこぞりて (20)","lines":["あめつちこぞりて","かしこみたたえよ","み恵みあふるる","父、み子、聖霊を"]},"2":{"jp_num":2,"title_jp":"2.　聖なる聖なる(61)","lines":["１．聖なる聖なる　聖なるかな","三つにいまして　一つなる","神のみ名をば　朝まだき","おきいでてこそ　ほめまつれ","２．聖なる聖なる　聖なるかな","罪ある目には　見えねども","みいつくしみの　満ちたれる","神の栄えぞ　たぐいなき","３．聖なる聖なる　聖なるかな","み手のわざなる","ものみなは","三つにいまして　一つなる","神のおおみ名　ほめまつらん"]},"36":{"jp_num":5,"title_jp":"５．聖なるみ名を","lines":["１．","聖なるみ名を　よろこびたたえよ","とこしえまでも　治めるわが主を","とうとき神の　みわざをほめよ","２","み使い歌え　聖徒もたたえよ","いざ声あげて","主のみ名をあがめよ","聖なる神に　み栄えあれと","３．","父なる神と　み子イェス・キリスト","聖なる霊は　一つなるみ神","心を合わせ","よろこび歌わん"]},"62":{"jp_num":6,"title_jp":"６．よろずのもの(17)","lines":["１．よろずのもの　永遠に知らす","み父よ","いま恵みを　くだしたまえ","み名をほむる　われらに","２．人となりし　ひとりのみ子","主イェスよ","ときつるぎの　み言葉もて","しめしたまえ　まことを","３．いとも強き　なぐさめぬし","聖霊よ","わが心を　おさめたまえ","今よりのち　はなれで","４．三つにまして　ひとりの神","み神よ","み栄えとを　とこしえまで","ほめたたえて　したがわん"]},"17":{"jp_num":9,"title_jp":"9.　世界をつくりし","lines":["１．世界をつくりし　み神をたたえよ","ハレルヤ　ハレルヤ","輝く太陽　きらめく月星","（くりかえし）","主をほめたたえよ","ハレルヤ　ハレルヤ　ハレルヤ","２．そよ風ささやき　み神をたたえよ","ハレルヤ　ハレルヤ","朝にも夕にも　感謝をささげて","３．うれしき声に　歌うたいて","恵みの神を　たたえまつらん","み神よわれら　しもべたちを","恵み導き　守りたまえ","４．父　子　聖霊の　み神をたたえよ","ハレルヤ　ハレルヤ","あふれる命を　われらに与えし"]},"64":{"jp_num":10,"title_jp":"10.　世界をつくりし(1)","lines":["１．世界をつくりし","主のみ前に伏し","すべての人びと","み神をたたえよ","２．ちりもてわれらを","つくりしわが神","さまよう羊を","みもとに導く","３．いざ主の住まいに","つどいてたたえよ","み民の歌ごえ","み国にとどろく","４．この世は過ぎゆき","ものみな変われど","とうとき真理は","動かぬいわなり"]},"29":{"jp_num":11,"title_jp":"11.　つくりぬしなる","lines":["１．","つくりぬしなる　主のわざと","豊かな恵みを　ほめたたえよ","豊かな恵みを　ほめたたえよ","２．","み手もて命　守る主に","まごころささげて　ほめたたえよ","まごころささげて　ほめたたえよ","３．","世界治める　愛の主を","たえなる歌もて　ほめたたえよ","たえなる歌もて　ほめたたえよ","４．","力に満ちた　主の腕に","すべてをゆだねて　ほめたたえよ","すべてをゆだねて　ほめたたえよ"]},"76":{"jp_num":12,"title_jp":"12.　果てしも知られぬ(74)","lines":["１．果てしも知られぬ　あまつ海原を","わたるや朝日の　うららに匂いて","世界をつくりし　父なるみ神を","あらわす光ぞ　日々にあらたなる","２．暮れゆくみ空に　月　星ほのめき","みちかくる影に　変わるきらめきに","変わらぬみ神の　不思議なる知恵を","あらわす光ぞ　夜々にさやかなる","３．昼はもの言わず　夜はかたらねど","声なき歌声　心にぞひびく","我らの命に　ましますみ神の","おきてはかしこく　みいつこよなしと"]},"74":{"jp_num":14,"title_jp":"14.　ここは神の（６５）","lines":["１．","ここは神の　世界なれば","天なる調べは　四方に聞こゆ","岩も木々も　空も海も","くすしきみわざを　さやに示す","２．","ここは神の　世界なれば","野ゆりも小鳥も　神をたたう","風にそよぐ　草木にすら","とうときみ神の　み声を聞く","３.","ここは神の　世界なれば","あくまの力は　やがてほろぶ","わが心よ　などてなげく","王なるわが神　世をすべます"]},"70":{"jp_num":15,"title_jp":"15.　み神の力を　ともにうたえ(64)","lines":["１．み神の力を　ともに歌え","海　山　つくりし　深き知恵を","太陽　月　星　空に置きて","くすしく導く　神をほめよ","２．み神の言葉は　世界つくりし","命をやしない　愛し守る","海　空　地に住む　生けるものよ","みわざの不思議を　ともにほめよ","３．み神のみ座より　恵みあふれ","大地は命に　満ちあふれる","栄えをあおぎて　神をほめよ","いずこに行きても　神はいます"]},"228":{"jp_num":18,"title_jp":"18.　神の聖なる(545)","lines":["１","神の聖なる　安息日を","きよく覚えて　楽しく過ごさん","（くりかえし）","とうとき神の　安息日は","とこしえまでも　救いのしるし","２","世のわずらいを","主の手にゆだね","み国を思い　静かに祈らん","３","安息日に　入る夕べは","ともに救いの　恵みを歌わん"]},"222":{"jp_num":19,"title_jp":"19.　聖なるこの日","lines":["１．聖なるこの日　み神をうたい","わが主の恵み　求めて祈る","２．日ごとのつとめ","静かに終えて","安けき憩い","わが主はたもう","３．み国の光　ゆたかに受けて","安息日を　よろこび迎えん","４．聖霊われの　心をみたし","とうときみ名を","歌わせたまえ"]},"217":{"jp_num":20,"title_jp":"20.　神は日ごとに(550)","lines":["１．神は日ごとに　守りたまえり","この日はきよき　主の安息日","つくりぬしなる　神をたたえよ","つくりぬしなる　神をたたえよ","２．思いわずらい　すべて離れて","きよきこの日を","主イェスと過ごさん","罪のゆるしを　ともによろこべ","罪のゆるしを　ともによろこべ","３．きよきこの朝　神のみ顔を","ともに仰ぎて　よろこび歌い","神のみ国を　思い楽しまん","神のみ国を　思い楽しまん","４．罪のこの身を","ゆるしあがなう","神のみ恵み　いざほめ歌え","われらみ国に","行きて主に会わん","われらみ国に","行きて主に会わん"]},"126":{"jp_num":28,"title_jp":"28.　子羊をば(156)","lines":["１．子羊をば　ほめたたうる","耐えなるもののね","あめに聞こゆ","イザみ民よ　恵みの主に","栄えのかむりを","ささげまつれ","２．み使いらも　うち伏すまで","わが主のみ傷は　照り輝く","いざみ民よ　救いの主に","栄えのかむりを","ささげまつれ","３．戦い止み　矢さけび絶え","祈りと歌との　声はひびく","いざみ民よ　平和の主に","栄えのかむりを","ささげまつれ","４．空のきわみ　地の果てまで","み栄えの光　照りわたりぬ","父とともに　知らす君に","栄えのかむりを","ささげまつれ"]},"138":{"jp_num":29,"title_jp":"２９.　イエス君は（４８７）","lines":["１、イエス君は　いとうるわし　　３、夏のゆう　青葉わたる","あめつちの主なる　　　　　　　　　風よりかぐわし","神のみ子　人の子を　　　　　　　\t冬の日　ふりつもる","なににかは　たとえん　　　　　　　雪よりきよけし","３、春のあさ　つゆににおう　　　４、イエス君は　いとうるわし","花よりうつくし　　　　　　　　　　　　あめつちの主こそ","秋のよる　空にすむ　　　　　　　　わが栄え　わがかむり","月よりさやけし　　　　　　　　　　　\tわがよろこびなれ"]},"26":{"jp_num":31,"title_jp":"31.　聖なる神(208)","lines":["１．聖なる神　ハレルヤ","アーメン","ほめたたえよ","ハレルヤ　アーメン","主なるイェスを　心つくし","ともに歌え","ハレルヤ　アーメン","２．恵みの神","ハレルヤ　アーメン","声を合わせ","ハレルヤ　アーメン","主はわが友　救いの君","ともに歌え","ハレルヤ　アーメン","３．命の君","ハレルヤ　アーメン","主キリストに","ハレルヤ　アーメン","神の国を　望み歌わん","ともに歌え","ハレルヤ　アーメン"]},"77":{"jp_num":39,"title_jp":"39.　あめには栄え（79）","lines":["１．あめには栄え　み神にあれや","つちには安き　人にあれやと","み使いたちの　たたうる歌を","聞きてもろびと　ともに喜び","生まれたまいし　君をたたえよ","２．さだめたまいし　救いのときに","神のみくらを　離れてくだり","御霊によりて　おとめに宿り","世びとのなかに　すむべきために","生まれたまいし　君をたたえよ","３．朝日のごとく　輝きのぼり","み光をもて　暗きを照らし","つちよりいでし　人をいかしめ","つきぬ命を　あたうるために","生まれたまいし　君をたたえよ"]},"115":{"jp_num":41,"title_jp":"41.　牧人ひつじを（８３）","lines":["１．牧人ひつじを","守れるそのよい","み使い来たりて","よろこび歌えり","（くりかえし）","ノエル　ノエル　たたえよ","主イェスは生まれぬ","２．仰げば東に　きらめく明ぼし","夜昼さやかに","かがやきわたれり","３．くすしき光の　導くまにまに","博士は馬ぶねの","主イエスにま見えぬ","４.　神の子しずかに","眠れるこの夜","世びとよ主イエスに","心をささげよ"]},"84":{"jp_num":42,"title_jp":"42.　神のみ子は今宵しも（87）","lines":["１．神の子は今宵しも","ベツレヘムに生まれたり","いざや友よもろともに","いそぎゆきて拝まずや","いそぎゆきて拝まずや","２．神に栄えあれかしと","みつかいらの声すなり","地なる人もたたえつつ","いそぎゆきて拝まずや","いそぎゆきて拝まずや","３．いける神のみ言葉は","今ぞ人となりたもう","待ち望みし主の民よ","おのが幸を祝わずや","おのが幸を祝わずや"]},"80":{"jp_num":43,"title_jp":"43.　もろびとこぞりて（７８）","lines":["１．もろびとこぞりて","むかえまつれ","久しくまちにし","主は来ませり","主は来ませり","主は主は来ませり","２．いざみなよろこび","たたえまつれ","恵みの光の","主は来ませり","主は来ませり","主は主は来ませり","３．しぼめる心の","花を咲かせ","恵みのつゆおく","主は来ませり","主は来ませり","主は主は来ませり","４．正しきさばきを","おこないたもう","救いのぬしとぞ","ほめたたえよ","ほめたたえよ","ほめほめたたえよ"]},"89":{"jp_num":46,"title_jp":"46.　あら野のはてに（９２）","lines":["１．あら野のはてに","夕日は落ちて","たえなる調べ","天よりひびく","（くりかえし）","グロリア　インエクセルシスデオ","グロリア　インエクセルシスデオ","２．羊を守る　野辺の牧人","天なる歌を　よろこびききぬ","３．み歌をききて","羊飼いらは","馬ぶねに伏せる","み子を拝みぬ","４．今日しもみ子は","生まれたまいぬ","世界の民よ","よろこび歌え"]},"90":{"jp_num":51,"title_jp":"51.　きよしこの夜（８1）","lines":["１．","きよしこの夜　星はひかり","すくいのみ子は　馬ぶねの中に","ねむりたもう　安らかに","２．","きよしこの夜　み告げ受けし","羊飼いらは　み子のみ前に","ぬかずきぬ　かしこみて","３．","きよしこの夜　み子の笑みに","あたらしき代の　あしたのひかり","かがやけり　ほがらかに"]},"88":{"jp_num":62,"title_jp":"６２　われらは来たりぬ　（９０）","lines":["１　われらは　来たりぬ　　　　２　わがまち来たれる","はるけき国より　　　　　　　　とうときこがねを","星にみちびかれ　　　　　　　　メシアのかむりの　かざりとなさん","野山こえて　　　　　　　　　３　わがまち来たれる","（くりかえし）　　　　　　　　　　　にゅうこうささげて","ああくしくかがやく　　　　　　　　いと高きみ神　ともにたたえて","星の光よ　　　　　　　　　　　４　わがまち来たれる","われらをみちびけ　　　　　　　　もつやくささげて","み子のみもとに　　　　　　　　　み苦しみの日に　備えまつらん","５　よろずをすべます","メシアは生まれぬ","ハレルヤハレルヤ　たたえまつらん"]},"97":{"jp_num":78,"title_jp":"７８.　血潮したたる（１０１）","lines":["血潮したたる　主のみかしら　　３　なつかしき主よ　はかり知れぬ","とげにさされし　主のみかしら　　　十字架の愛に　いかにこたえん","悩みとはじに　やつれし主を　　　　この身とたまを　とこしえまで","われはかしこみ　君とあおぐ　　　　わが主のものと　なさせたまえ","主の苦しみは　わがためなり　　４　主よ主のもとに　かえる日まで","われは死ぬべき　罪びとなり　　　　十字架のかげに　立たせたまえ","救いのために　命をすてし　　　　　み顔をあおぎ　み手によらば","主のみ心は　いとかしこし　　　　　いまわの息も　安けくあらん"]},"95":{"jp_num":81,"title_jp":"８１.　栄えの主イエスの","lines":["1　　　　　　　　　　　　　　　　　　　　　　　３","栄えの主イエスの　十字架仰げば　　見よ主のみかしら　み手み足より","世の富ほまれ　ちりにぞひとしき　　　恵みとかなしみ　こもごもながるる","２　　　　　　　　　　　　　　　　　　　　　　　４","十字架のほかには　わが誇りあらず　　恵みとかなしみ　ひとつにとけあい","この世のものみな　消えなば消えされ　いばらはまばゆき　かむりと輝く","5　ああ主の恵みに　心はよろこび","ただ身とたまを　ささげてぬかずく"]},"188":{"jp_num":83,"title_jp":"８３.　主にのみ十字架を","lines":["１　主にのみ　十字架を　　　　3　わが身もいさみて","負わせまつり　　　　　　　　　　十字架を負い","われは知らず顔に　　　　　　　死にいたるまで","あるべきかは　　　　　　　　　　仕えまつらん","２　十字架を　背負いし　　　　４　この世のあら波","さきがけらの　　　　　　　　　　いかにもあれ","み国によろこぶ　　　　　　　　　栄えのかむりは","さちやいかに　　　　　　　　　　十字架にあり"]},"176":{"jp_num":85,"title_jp":"85.　十字架のもとぞ（２６０）","lines":["１．十字架のもとぞ　いと安けき","神の義と愛の　会えるところ","あらしふく時の","いわおのかげ","荒れ野の中なる","わが隠れ家","２．十字架の上に","われは仰ぐ","わがため悩める","神のみ子を","たえにもとうとき　神の愛よ","底いも知られぬ　人の罪よ","３．十字架のかげに","われは立ちて","み顔の光を　たえず求めん","この世のものみな","消ゆるときも","栄えに輝く　主のみ恵み"]},"102":{"jp_num":86,"title_jp":"86.　救いのぬしは（１０５）","lines":["１．救いのぬしは　ハレルヤ","よみがえりしぞ　ハレルヤ","勝ちどきあげて　ハレルヤ","あがめまつれよ　ハレルヤ","２．十字架をしのび　ハレルヤ","死にて死にかち　ハレルヤ","生きて命を　ハレルヤ","人にぞたもう　ハレルヤ","３．主の苦しみに　ハレルヤ","われはいやさる　ハレルヤ","あまつ使いと　ハレルヤ","ともにぞ歌わん　ハレルヤ"]},"144":{"jp_num":91,"title_jp":"91.　よみがえられた（１０３）","lines":["１．よみがえられた","救いぬしに","わたしは今日も","お仕えする","いつでもそばに","おられる主は","命与えて　くださる","（くりかえし）","主は主は　生きています","日ごとにわたしの","そばにいます","主は主は　とこしえまで","わたしの心に　　生きています","２．あらしのときも　悩みの日も","心の中に　恐れはない","み神の国に　のぼる日まで","わたしの旅路　導く","３．よろこべ友よ　声をあげて","ハレルヤ歌い","ほめたたえよう","世界の希望　救い主は","わたしを愛し　助ける"]},"157":{"jp_num":96,"title_jp":"96.  聖霊くだりて","lines":["1. 聖霊くだりて　われを生かし","きよい愛の火を　燃やしたまえ","２. はかないものより　こころ離し","永遠のよろこびに向かせたまえ","３. こころによろこび　きよい思い","あふれるばかりに　満たしたまえ","４. 聖霊くだりて　われを生かし","広めさせたまえ　イエスの愛を"]},"156":{"jp_num":99,"title_jp":"99.　みたまの神よ","lines":["１、","聖霊の神よ","われらを照らし","こころの闇に","光をたまえ","２．","聖霊の神よ","われらを満たし","思いをきよめ","力をたまえ","３．","聖霊の神よ","われらをいやし","悲しみ痛み","取り去りたまえ","４．","聖霊の神よ","われらに宿り","とこしえまでも","主となりまたえ"]},"153":{"jp_num":100,"title_jp":"100.　みたまを注ぎて（２０２）","lines":["１．御霊をそそぎて","むかしの聖徒の","信仰のほのお","われらにもたまえ","２．御霊を注ぎて","アブラムの信仰","パウロの勇気を","われらにもたまえ","３．御霊を注ぎて","ルツのかしこさと","ドルカスの愛を","われらにもたまえ","４．御霊を注ぎて","イザヤのまぼろし","ダビデの歌をば","われらにもたまえ","５．御霊を注ぎて　エリヤの力と","モーセの輝き","われらにも　たまえ"]},"151":{"jp_num":102,"title_jp":"102.　みたまよくだりて（１９０）","lines":["１．御霊よくだりて　昔のごとく","くすしきみわざを","あらわしたまえ","（くりかえし）","代々にいます　御霊のかみよ","今こそわが身に","満ちさせたまえ","２．御霊よくだりて","恵みの雨に","かわける心を","うるおしたまえ","３．御霊よくだりて","けがれをきよめ","とうとき救いに","いらしめたまえ","４．御霊よくだりて","よわきものをも","きよきみ力に","富ましめたまえ"]},"254":{"jp_num":421,"title_jp":"421.　ほめうたえ　ひとり子イェス","lines":["１.　ほめうたえ　一人子イェス","われらを愛し　救いたもう","（くりかえし）","ふたたびわれらを","生かしたまえ","ハレルヤみ神に　栄えあれ","２．ほめうたえ　きよき御霊","救いの君を　しめしたもう","３．ほめうたえ　子羊イェス","わが身のけがれ","きよめたもう","４．ほめうたえ　恵みの神","わがゆく道を　守りたもう","５．ほめうたえ　いのちの君","心に愛を　満たしたもう"]},"65":{"jp_num":109,"title_jp":"109.　あめつちの（６３）","lines":["１．あめつちの　み神をば","ほめまつれ　人の子よ","われらが主の　みとのこそ","照り輝け　いや栄えて","２．光をば　ころもとし","黒雲を　車とし","いかずちして　さきおわせ","よろずしらす　かしこさよ","３．いとくすし　主のおきて","雪としき　雨と降り","谷をはしり　野にながれ","風とそよぎ　花と咲く","４．ちりひじに　なりし身は","主に頼る　ほかぞなき","代々かわらぬ　み恵みや","わがみ神よ　わが父よ"]},"328":{"jp_num":110,"title_jp":"110.　いざやともに（５）","lines":["１．いざやともに　声うちあげて","くしきみわざ　ほめ歌わまし","つくりましし　あめつちみな","神によりて　よろこびあり","２．母の胸に　抱かれし日より","わが旅路を　みちびく神は","今ものちも　あだをふせぎ","世のわざわい　除きたまわん","３．まよいを去り　安きを与え","つねに恵み　なぐさめたもう","父なる神　み子　御霊に","代々みいつと　み栄えあれ"]},"69":{"jp_num":126,"title_jp":"126.　輝く日を仰ぐとき（６９）","lines":["１．輝く日を仰ぐとき","月星　ながむるとき","雷鳴りわたるとき","まことのみ神をおもう","（くりかえし）","わがたま　いざたたえよ","大いなるみ神を","わがたま　いざたたえよ","大いなるみ神を","２．森にて鳥の音を聞き","そびゆる山に登り","谷間の流れの声に","まことのみ神をおもう","３．み神はよびとを愛し","ひとりのみ子をくだし","世びとの救いのために","十字架にかからせたり","４．天地つくりし神は","人をもつくり変えて","正しくきよきたましい","持つみとならしめたもう","５．間もなく主イェスは来たり","われらを迎えたまわん","いかなるよろこびの日ぞ","いかなる栄えの日ぞ"]},"194":{"jp_num":128,"title_jp":"128.　主なる神に（１４７）","lines":["１．主なる神に　栄えあれ","愛のゆえに　み子イェスは","人となりて　生まれたもう","神の恵み　ほめ歌え","（くりかえし）","歌え歌え　声合わせて","ほめよほめす　すべての民","主なる神に　み子イェスに","み栄えあれ　とこしえに","２．子なる神に　栄えあれ","わが心の　けがれさえ","十字架により　きよめたもう","神の愛を　ほめ歌え","３．救いぬしに　栄えあれ","とうときかな　そのみわざ","きよきみ顔　あおぐ日に","神の救い　ほめ歌わん"]},"143":{"jp_num":129,"title_jp":"129.　たたえよ　救い主のみ名（１４１）","lines":["１．","たたえよ　すくいぬしのみ名","大地よ　愛を告げよ","み使い　み恵みをほめよ","栄光　主にこそあれ","日ごとに　きよきみ手もて","われらを　みちびきたもう","（くりかえし）","たたえよ　恵みふかき主を","よろこび　歌え高く","２．たたえよ　救い主のみ名","十字架に　罪をせおい","血潮に　そめるイェス君は","われらの　あがないぬし","あめつち　とどろき歌え","救いの　岩なる主を","３．たたえよ　すくいぬしのみ名","ホザナと　ともに歌え","世界を　おさめたもう主に","かむりを　ささげまつれ","力も　栄えも国も","すべては　主のものなりｑｗ"]},"158":{"jp_num":145,"title_jp":"145.　主よいのちの（５８１）","lines":["１．主よ命の　言葉を","与えたまえ　わが身を","われはもとむ　ひたすら","主よりたまう　みかてを","２．ガリラヤにて　みかてを","わけたまいし　わが主よ","今もいける　言葉を","与えたまえ　ゆたかに"]},"159":{"jp_num":146,"title_jp":"146.　み言葉を与えたまえ","lines":["１．み言葉を与えたまえ","さまよえる人びとに","やみせまり風吹くとも","主によりて平和なり","（くりかえし）","み言葉をきよき光","わがうちにかがやけり","神の義と愛の言葉","とこしえに変わりなし","２．み言葉を与えたまえ","わが足をみちびきて","平和なる主の道へと","われをいま入れたまえ","３．み言葉を与えたまえ","永遠のみ国にて","かがやける主の光を","われにさえ見せたまえ"]},"288":{"jp_num":359,"title_jp":"359.　主よいまわれらの","lines":["１.　主よいまわれらの","罪をゆるし","足らざるこの身を","清むるみわざを","たたえまつる","２．平和のつゆもて　心とかし","痛みと悩みを","しずめるみ心","いとうるわし","３．この世の思いに","身をこがして","さわげる心に","小さきみ声を","聞かせたまえ","４．招きにこたえし　弟子のごとく","主イェスのみ言葉","そのまま聞きつつ","したがいゆかん"]},"164":{"jp_num":148,"title_jp":"148.　いのちのみ言葉（２０４）","lines":["１．","命のみ言葉　たえにくすし","見えざるみ神の　むねをしめし","つかえまつる　道をおしう","（くりかえし）","命のみ言葉　たえなるかな","命のみ言葉　くすしきかな","２．","主イェスのみ言葉　いとしたわし","あまねくちまたに　ひびきわたり","まよう子らを　あめに招く","３．","うれしきおとずれ　たえず聞こえ","ゆるしとやわらぎ　たもう神の","深きめぐみ　世にあらわる"]},"337":{"jp_num":149,"title_jp":"149.　いともよきものを（１２４）","lines":["１．","いともよきものを　君にささげよ","あつきなが心　若きちからを","義のために勇み　立てよわが友","みいくさに続き　悪とたたかえ","（くりかえし）","いともよきものを　君にささげよ","あつきなが心　若きちからを","２．","いともよきものを　君にささげよ","ためらわず君の　ように備えよ","勇ましくませる　イェスをなが身の","のりとして学べ　愛し仕えよ","３．","いともよきものを　君にささげよ","君はいのちをも　なれにたまえり","十字架の死をも　こばみたまわず","あがないのわざを　なさせたまいぬ"]},"178":{"jp_num":151,"title_jp":"151.　わが主にすべてを（２６１）","lines":["１．わが主にすべてを","よろこびささぐ","主イェスを愛して","日ごとにたよらん","（くりかえし）","主にささぐ　みなささぐ","み前にすべてを","いまささぐ","２．主イェスのみもとに","すべてをささぐ","わが身と心を","主よ受けたまえ","３．わが主の救いに","ほめうたささぐ","とうとき主のみ名","よろこびうたわん"]},"186":{"jp_num":152,"title_jp":"152.　わが目を開きて（１９５）","lines":["１．","わが目を開きて　主よ見させたまえ","救いの道示す　聖なるまことを","われ今静かに　みむねを受け入れん","主よ開きたまえ　わが目を","２．","わが耳開きて　主よ聞かせたまえ","正義といつわりを　見わけるみ言葉","われ今静かに　みむねを受け入れん","主よ開きたまえ　わが耳","３．","わが口開きて　主よ言わせたまえ","とうとき神の愛　つきせぬ恵みを","われ今静かに　みむねを受け入れん","主よ開きたまえ　わが口","４．","心を開きて　主よみたしたまえ","聖なる主の霊の　豊かなたまもの","われ今静かに　みむねを受け入れん","主よ開きたまえ　心を"]},"298":{"jp_num":194,"title_jp":"19４.　あさかぜ静かに吹きて（５４９）","lines":["１．あさかぜ静かに吹きて","小鳥も目さむるとき","きよけき朝よりきよく","うかぶは神の思い","２．ゆかしき神の思いに","とけゆくわが心は","つゆけき朝のいぶきに","いきづく野辺の花か","３．輝くとこしえの朝","み前に目さむるとき","この世の朝よりきよく","あおぎ見ん神のみ顔"]},"50":{"jp_num":202,"title_jp":"202.　たそがれややに（５１）","lines":["１．たそがれややに","よもをおおえば","あまつみ神の","み姿いよよ　さやけし","（くりかえし）","聖なるかな　万軍の","あめつちの神","つくりぬしこそ","聖なれ","２．わが家に帰る","おさなごのごと","神のみ民を","つどわせたまえ　み前に","３．おぼろにかすむ","わが目も晴れて","たえずみ顔を","おがませたまえ","み神よ"]},"302":{"jp_num":206,"title_jp":"206.　救いぬしイェスよ","lines":["１．","救い主イェスよ　光のわが主よ","み姿たえせず　あおがしめたまえ","２．","ひと日の疲れに　目をとずる時も","み国のさちをば　思わしめたまえ","３．","ともにませイェスよ　明日に夕べに","生くるも死ぬるも　みうでにすがれば","４．","まさ道をはなれ　さまよえる子らに","ゆるしのみ声を　今聞かせたまえ","５．","明日にめざめて　わざをなすときも","日ごとに恵みを　ゆたかにたまえや"]},"246":{"jp_num":208,"title_jp":"208.　栄えに満ちたる","lines":["１．　　　　　　　　　　　２．　　　　　　　　　　３．","栄えにみちたる　　　つきせぬ愛より　　　はかなき楽しみ","神のみやこは　　　いのちの泉　　　　　　むなしき富に","ちとせの岩なる　　豊かにわきいで　　　ほこれる世びとは","み言葉に立ち　　　くめどつきねぬ　　　　あざ笑うとも","救いの岩がき　　　み国のよつぎは　　　神よりたまわる","高くかこめば　　　　かわくときなし　　　　栄えを受けて","み民の平和は　　　あふるる恵みに　　　こよなきよろこび","ゆらぐことなし　　　たえずうるおう　　　　つねに変わらじ"]},"181":{"jp_num":213,"title_jp":"213.　いさおなきわれを（２４９）","lines":["１．いさおなきわれを","血をもてあがない","イェスまねきたもう","われみもとにゆく","２．罪とがのけがれ","あらうによしなし","イェス清めたもう","われみもとにゆく","３．うたがいの波も","おそれのあらしも","イェスしずめたもう","われみもとにゆく","４．たよりゆく者に","救いと命を","イェスちかいたもう","われみもとにゆく","５．いさおなきわれを","かくまであわれみ","イェス愛したもう","われみもとにゆく"]},"273":{"jp_num":214,"title_jp":"214.　ああうれしわがみも（３６０）","lines":["１．ああうれしわが身も","主のものとなりにけり","うき世だにさながら","あまつ世のここちす","（くりかえし）","うたわでやあるべき","すくわれし身のさち","たたえでやあるべき","みすくいのかしこさ","２．のこりなくみむねに","まかせたる心にぞ","えもいえずたえなる","まぼろしを見るかな","３．むねのなみおさまり","心いとしずかにて","われもなく世もなく","ただ主のみいませり"]},"160":{"jp_num":215,"title_jp":"215.　十字架の血に（２３８）","lines":["１．十字架の血に","きよめぬれば","こよとのみ声を","われは聞けり","（くりかえし）","主よわれは　いまぞゆく","十字架の血にて","きよめたまえ","２．よわきわれも　み力をえ","この身のけがれを","みなぬぐわれん","３．あまつ国を　あおぎ祈る","心にみつるは","主のみ恵み","４．ほむべきかな　わが主の愛","ああほむべきかな","わが主の愛"]},"366":{"jp_num":230,"title_jp":"230.　きよき愛（５８９）","lines":["１．きよき愛　たもう神よ","この祈り　聞きたまえ","み前にて　ちかいかわす","二人を　しゅくしたまえ","２．よろこびを　たもう神よ","涙をも　歌にかえ","かぎりなき　愛と平和","二人に　与えたまえ"]},"267":{"jp_num":238,"title_jp":"238.　いともかしこし（３０２）","lines":["１．いともかしこし　イエスの恵み","罪に死にたる　身をも生かす","主よりたまわる　あめのかてに","うえし心も　あきたらいぬ","（くりかえし）","世にあるかぎり　君のさかえと","いつくしみとを　かたり伝えん","２．救いの恵み　つげるわれは","たのしみあふれ　歌とぞなる","ほろびをいでし　このよろこび","あまねく人に　えさせまほし","３．くすしき恵み　あまねくみち","あるにかいなき　われをもめし","あまつよつぎと　なしたまえ","たれかもるべき　主の救いに"]},"207":{"jp_num":239,"title_jp":"239.　罪に沈み","lines":["１．罪にしずみ　悲しめる","世びとを助けたもう","わが主イェスを　世に伝えん","主はわが救いぬしと","（くりかえし）","救いたまえ　罪びとを","恵みふかき　わが主よ","２．救いぬしは　待ちたもう","やさしくみ手をのべて","神にそむき　さまよえる","わが子よいま帰れと","３．いまは恵み　救いの日","十字架のもとに来たれ","罪を救う　神のみ子","信じて　救い受けよ"]},"364":{"jp_num":242,"title_jp":"242.　あまつましみず（５９１）","lines":["１．あまつまし水　流れきて","あまねく世をぞ　うるおせる","ながくかわきし","わがたましいも","くみて命に　かえりけり","２．あまつまし水　のむままに","かわきを知らぬ　身となりぬ","つきぬ恵みは　心のうちに","泉となりて　わきあふる","３．あまつまし水　うけずして","罪にかれたる　ひと草の","栄えの花は","いかで咲くべき","そそげ命の　まし水を"]},"252":{"jp_num":251,"title_jp":"251.　主われを愛す（１１９）","lines":["１．主われを愛す","主はつよければ","われよわくとも","おそれはあらじ","（くりかえし）","わが主イェス　わが主イェス","わが主イェス　われを愛す","２．わが罪のため　栄をすてて","あめよりくだり","十字架につけり","３．み国の門を　ひらきてわれを","まねきたまえり","いさみてのぼらん","４．わが君イェスよ","われをきよめて","よきはたらきを","なさしめたまえ"]},"300":{"jp_num":252,"title_jp":"252.　いつくしみ深き（３７８）","lines":["１．いつくしみ深き","友なるイェスは","罪とがうれいを　取り去りたもう","心のなげきを","つつまずのべて","などかは下ろさぬ","おえるおもにを","２．いつくしみ深き","友なるイェスは","われらの弱きを","知りてあわれむ","なやみ悲しみに　しずめるときも","祈りにこたえて","なぐさめたまわん","３．いつくしみ深き","友なるイェスは","かわらぬ愛もて","みちびきたもう","世の友われらを","すて去るときも","祈りにこたえて","いたわりたまわん"]},"343":{"jp_num":256,"title_jp":"256.　歌え主の愛（１０７）","lines":["１．うたえ主の愛","われを罪より","救うため主は","十字架につけり","（くりかえし）","うたえイェスの愛","うたえ主の恵み","われを救いし","主をほめまつれ","２．深き主の愛","罪のけがれを","雪のごとくに","白くかえたもう","３．いさおなきわれ","愛したもう主","ともに主の愛","よびとに伝えん"]},"305":{"jp_num":258,"title_jp":"258.　ひとたびは死にし身も（４０８）","lines":["１．ひとたびは死にし身も","主によりていま生きぬ","み栄えのかがやきに","罪の雲きえにけり","（くりかえし）","昼となく夜となく","主の愛に守られて","とこしえのみ国まで","主とともにたびじゆかん","２．主の受けぬこころみも","主の知らぬ悲しみも","うつし世にあらじかし","いずこにもみあと見ゆ","３．昼となく夜となく","主はともにましませば","いやされぬやまいなく","さちならぬまがもなし"]},"253":{"jp_num":262,"title_jp":"262.　あめなるよろこび（３４８）","lines":["１．あめなるよろこび　こよなき愛を","たずさえくだれる　わが君イェスよ","救いの恵みを　あらわにしめし","いやしきこの身に　すみたまえ今","２．命をあたうる　主よとどまりて","われらの心を　とこ宮となし","みつかいのごとく　賛美と祈り","み前にささげて　愛させたまえ","３．われらをあらたに　つくりきよめて","栄えに栄を　いやましくわえ","み国にのぼりて　み前にふす日","みすがたのごとく　かえたまえ主よ"]},"41":{"jp_num":266,"title_jp":"266.　わがよろこび","lines":["１．わがよろこび　わがのぞみ","わが命の主よ","昼たたえ夜　歌いて","なおたらぬを思う","２．したいまつる　かいぬしよ","いずこのまきばに","そのむれを　主はみちびき","やしないたまえる","３．シオンのむすめ　かたれかし","わが命の主に","のべにてか　まくやにてか","会いまつらざりし","４．主のみ顔のやさしさに","みつかいよろこび","み言葉のうるわしさに","あめつり歌えり","５．ならびもなき愛の主の","み声ぞうれしき","わがのぞみわが命は","とわに主にあれや"]},"163":{"jp_num":269,"title_jp":"269.　せわしき日ごとの","lines":["１．せわしき日ごとの　歩みのうちに","従えわれにと　主イェスは招く","２．この世のこころみ　はげしきときも","愛せよわれをと　主イェスは招く","３．悲しみ悩みに　沈めるときも","仕えよわれにと　主イェスは招く","４．とうとき招きに　こたえてわれは","心を尽くして　主イェスを愛す"]},"165":{"jp_num":270,"title_jp":"270.　イェスは今も招きたもう（２１３）","lines":["１．イェスは今も　まねきたもう","なやむわが友","心ひらき　受け入れよ","イェスのすくいを","（くりかえし）","主に主に　かえれわが友","イェスはきょうも　まねきたもう","かえれわが友","２．めぐみふかき　すくいぬし","今もとりなす","イェスのもとに　ためらわず","かえれそのまま","３．ふかき　愛のみ言葉を","思えわが友","み手をひろげ　まねく主に","かえれ　今すぐ"]},"168":{"jp_num":273,"title_jp":"273.　暗き道に迷い（２１１）","lines":["１．くらき道にまよい","よわりはてし者","イェスのみ顔あおぎ","光にあふれよ","（くりかえし）","ながめよイェスを","あおげよみ顔を","世のさかえ消えゆきぬ","み恵みの光に","２．ふかき罪にしずみ","のぞみはてし者","イェスにたよりて生きて","命にあふれよ","３．イエスのちかい信じ","きぼういだく者","やみの町に行きて","み救いつたえよ"]},"180":{"jp_num":285,"title_jp":"285.　イェスよこの身を（３００）","lines":["１．イェスよこの身を","ゆかせたまえ","愛のあふるる　十字架さして","（くりかえし）","われはほこらん　ただ十字架を","あまつ憩いに　入るときまで","２．十字架にすがる","弱きわれは","いまぞ知りぬる　深き恵み","３．十字架の上に　よろこびあり","たえずみかげに","よらせたまえ","４．かがやく国に　のぼる日まで","十字架のもとに","立ちてぞ待たん"]},"280":{"jp_num":286,"title_jp":"286.　くしき主の光（３４９）","lines":["１．くしき主の光　心にみつ","み空わたる日の","かげにまさる","（くりかえし）","ああ主よ　わが主よ","かがやくみすがたを","胸にうつすとは","わが主の恵み","２．くしき物の音は　心にみつ","口に言えずとも","主はききたもう","３．春ののどけさは","心にみつ","鳥は声きよく　花はかおる","４．愛のよろこびは","心にみつ","ともに声合わせ","いざたたえよ"]},"282":{"jp_num":287,"title_jp":"２８７　われを救うために（３０５）","lines":["１　われを救うために　　　　　　２　罪と恐れわれに","カルバリの丘にて　　　　　　　　せまり来るときにも","イエスは命を与え　　　　　　　　愛にみてる神は","血しお流したもう　　　　　　　　　十字架しめしたもう","（くりかえし）　　　　　　　　　　　　３　イエスを信じ受けよ","恵みよ罪をゆるす恵み　　　　　　かぎりなき恵みを","恵みよはかり知れぬ恵み　　　　われら神の国に","ゆきてみ顔あおがん"]},"171":{"jp_num":290,"title_jp":"290.　罪　重荷を除くは（２９３）","lines":["１．罪　おもにをのぞくは","血の力主の血は","あくまのわざをこぼつ","くしき力なり","（くりかえし）","力ある主イェスの血","受けよ受けよ","力ある主イェスの血","受けよいま受けよ","２．肉の欲をのぞくは","血の力主の血は","罪汚れをきよむる　くしき力なり","３．雪より白くするは","血の力主の血は","罪のしみをぬき去る","くしき力なり","４．主にまことをつくすに","血の力主の血は","日ごとわれを助くる","くしき力なり"]},"101":{"jp_num":291,"title_jp":"291.　主イェスはとうとき（２９１）","lines":["１．主イェスはとうとき　血を流して","汚れたるわれを　きよめたもう","（くりかえし）","十字架のもと　主の光あり","罪のおもには　消えて","ただ主イェス　あおぎ見れば","よろこびかぎりなし","２．わが罪のゆえに　苦しみたもう","はかりも知られぬ　愛の深さ","３．人の罪おいて　主は息たえ","栄えも光も　やみにとざす","４．主のみ苦しみと　愛にこたえ","われはただすべて　ささぐるのみ"]},"191":{"jp_num":292,"title_jp":"292.　主の血にあがなわれ（２９６）","lines":["１．主の血にあがなわれ","よろこびつぐるは","神の子とされたる","恵みのおとずれ","（くりかえし）","とうとし　主の血のあがない","かしこし　今われ神の子","２．主イェスにあがなわれ","かたる言葉なし","主のともにいませば","よろこびつきせじ","３．わがあがないぬしを","日ごとにおぼえて","わきあふるる歌に","恵みをたたえよ"]},"99":{"jp_num":298,"title_jp":"298.　丘に立てる主の十字架は（９７）","lines":["１．丘に立てる主の十字架は","わが罪のためなり","主は罪びと救うために","血を流したまえり","（くりかえし）","われは主の十字架を","愛し日々従わん","カルバリの十字架は","わが栄えわが歌","２．小羊イェス栄え捨てて","カルバリの十字架に","つきてわれを救いたもう","主の恵みたたえよ","３．日々十字架をとりてわれは","主のあとに従わん","やがてイェスは招きたもう","とこしえのみ国に"]},"313":{"jp_num":299,"title_jp":"299.　まごころもて（３９３）","lines":["１．まごころもて　仰ぎまつらん","世のため","のろいの木に　つきたまいし","すくいのぬし　わが主よ","２．わが罪とが　けがれもみな","あらいて","いまよりのち　君のものと","なさせたまえ　わが主よ","３．いとゆたけき　恵みをもて","冷えたる","わが心に　きよけき火を","もやしたまえ　わが主よ","４．世のやみじに　迷えるとき","くらきを","昼にかえて　恵みの日を","照らしたまえ　わが主よ"]},"355":{"jp_num":306,"title_jp":"306.　たてよいざたて（５０６）","lines":["１．たてよいざたて　主のつわもの","見ずやみ旗の　ひるがえるを","すべてのあだを　ほろぼすまで","君はさきだち　行かせたまわん","２．たてよ聞かずや　主のつのぶえ","いざ戦いの　かどでいそがん","君がてにつく　この身なれば","雲なすあだも　なにかおそれん","３．たてよわが主の　力により","神のよろいを　かたくまとい","み霊のつるぎ　うちかざして","おのが持ち場に　勇み進め","４．たてよいくさは　やがて終わり","とわのかち歌　高くうたい","つきぬ命の　かむりを受け","栄えの君と　ともにおさめん"]},"283":{"jp_num":311,"title_jp":"311.　イェス君のみ名は（１３７）","lines":["１．イェス君のみ名は","悲しむ子らに","平和となぐさめ　与えて救う","（くりかえし）","イェスのみ名は　天のよろこび","イェスのみ名は　この世の望み","２．イェス君のみ名は","しょうりを与え","試みある日に　力をたもう","３．イェス君のに名は　祝福与え","その愛のみ手は","わが身を守る","４．イェス君のみ名は","人はひれ伏し","救われし者は　主をほめうたう"]},"319":{"jp_num":312,"title_jp":"312.　わが主のつばさのかげに（４１１）","lines":["１．わが主のつばさのかげに","安けくわれはいこわん","あらしふく暗き夜も","つねに守りたまえば","（くりかえし）","みつばさのかげに","のがれていこわん","心はとこしえに","主にありて安し","２．心に悲しみせまり","なやみ苦しむときに","みつばさのかげにわれは","主よりなぐさめを受けん","３．わが主のつばさのかげに","とうときよろこびあり","神の国に入る日まで","イェスのみもとにいこわん"]},"312":{"jp_num":314,"title_jp":"314.　深き恵みもて（４６８））","lines":["１．深き恵みもて　わが行く道を","救いぬしイェスは　導きたもう","心安らかに　日々主と歩まん","いかなるときにも　主は守りたもう","いかなるときにも　主は守りたもう","２．狭き世の道を　たどるときにも","救いぬしイェスは　みちびきたもう","わが心かわき　悩むときにも","よろこびの清水　岩より流る","よろこびの清水　岩より流る","３．約束の国に　のぼる朝まで","救い主イェスは　みちびきたもう","主に会うそのとき　よろこび歌わん","今日まで主イェスは　守りたまえり","今日まで主イェスは　守りたまえり"]},"320":{"jp_num":320,"title_jp":"320.　行くみちに","lines":["１．行くみちに　あらし吹き荒れ","なみ風あるとも","わが心　つねに歌わん","神にありて安し","（くりかえし）","こころ安し","神にありて安し","２．救いぬし　十字架につきて","わが罪　おいたもう","ほめうたえ　主の恵みを","神にありて安し","３．大いなる　主の日むかえて","よろこびにあふれ","み使いと　ともに歌わん","神にありて安し"]},"27":{"jp_num":316,"title_jp":"３１６　しゅのまことは　　（１０）","lines":["主のまことは　　　　　　２．うつりゆく世","ありその岩　　　　　　　　　さだめなき身","うず巻く波も　　　　　　　　ただ主に頼りて","などか動かん　　　　　　　安きをぞえん","（くりかえし）","くすしきかな　　　　　　３．つもれる罪","あまつみ神　　　　　　　　　深きけがれ","ああとうときかな　　　　　ただ主を仰ぎて","とこしえの主　　　　　　　　　救いをぞえん"]},"304":{"jp_num":317,"title_jp":"317.　神はわがやぐら（４００）","lines":["１．神はわがやぐら　わが強きたて","苦しめるときの　近きたすけぞ","おのが力　おのがちえを","たのみとせる　あしき世にも","われ　おそれなし","２．いかに強くとも　いかでか頼まん","やがてはくつべき　人の力を","われとともに　たたかいたもう","イェス君こそ　ばんぐんの主なる","あまつおお神","３．あくま世に満ちて　よしおどすとも","神のまことこそ　わがうちにあれ","よみのおさよ　ほえたけりて","せまりくとも　主のさばきは","なが上にあり","４．くらきの力の　よしふせぐとも","主のみことばこそ　進みに進め","わが命も　わがすべても","取らばとりね　神の国は","なおわれにあり"]},"296":{"jp_num":318,"title_jp":"318.　主イェスのみ胸に（４０７）","lines":["１．主イェスのみ胸に","ゆきていこえ","罪の世　はなれて","身をゆだねよ","（くりかえし）","神の子イェスよ　そのみ胸に","いこわせたまえ　頼るわれを","２．主イェスのみ胸に　慰めあり","罪びとあがなう　やさしき友","３．主イェスのみ胸に","休みを得よ","平和とよろこび　みちるところ"]},"318":{"jp_num":321,"title_jp":"321.　主はわが岩なり（４０１）","lines":["１．主はわが岩なり　主のもとにのがれん","風ふくときにも　わがこころ安し","（くりかえし）","力つよき主は　つねに守りたもう","たびじゆく民の　岩なるかくれ家","２．さかまくあら波　われにせまるとも","み神に守られ　わがこころ安し","３．岩なるわが主は　そば近くいます","いずこにありても　わがこころ安し"]},"279":{"jp_num":325,"title_jp":"325.　主のみ手に頼る日は（３７４）","lines":["１．主のみ手に頼る日は","いかによろこばしき","主のみ手に頼る日は","世にもさいわいなり","（くりかえし）","頼れ頼れ　とこしえのみ手に","頼れ頼れ　さらば恐れはあらじ","２．主のみ手に頼りつつ","進む道は楽し","主のみ手に頼りつつ","あゆまば光あらん","３．主のみ手に頼るとき","死も恐るべきかな","主のみ手に頼るとき","平和こころにあり"]},"306":{"jp_num":327,"title_jp":"327.　わが主の導くところ（４０４）","lines":["１．わが主の導くところ","みあとに従い歩まん","主イェスと道行くわれに","悲しみ恐れはあらじ","（くりかえし）","恐れのぞき守りたもう","主イェスに従い歩まん","２．わが友去りゆくときに","心はさびしけれども","主イェスはわが友なれば","すべてを感謝しうたわん","３．黒くもかこめるときも","わが主のみ胸に思う","ふたたび主に会うその日","み国の我が家に帰らん"]},"317":{"jp_num":328,"title_jp":"328.　罪に悩み　苦しむとき（４０２）","lines":["１．罪に悩み　苦しむとき","世の悲しみ　迫るとき","岩なる主の　かげに隠れ","こころ安く　日を過ごさん","（くりかえし）","千歳の岩なる","主のみもとに","われ憩わん","２．激しき風　吹きすさびて","世のいざない　襲うとき","岩なる主の　かげに逃れ","こころ安く　日を過ごさん","３．悪の力　われを囲み","逆巻く波　寄せるとき","岩なる主の　かげに宿り","こころ安く　日を過ごさん"]},"339":{"jp_num":329,"title_jp":"329.　主の言葉の光のうち（４８８）","lines":["１.　主の言葉の光のうち","頼りつつ歩けば","主はいつでもわたしたちと","ともにいてくださる","（くりかえし）","信じて主に頼れば","幸せな日々生きてゆける","２．暗い雲がおおうときも","主のみ顔あおげば","悩み恐れ疑いすら","みな消えてなくなる","３．わたしたちの背負う重荷","主はともににないて","十字架の道　導かれる","すべて主にまかせよ","４．主の行かれる場所であれば","どこにでも従う","主がいつでもおられるから","よろこびは尽きない"]},"316":{"jp_num":330,"title_jp":"330.　主と主の言葉に（３９５）","lines":["１.　主と主の言葉に","頼るは楽し","主はわが願いを","聞き入れたもう","（くりかえし）","ひたすらただ主に　頼るわが身を","主よ主よなおなお　恵ませたまえ","２．きよくなしたもう","血しおとうとし","いま信じくぐらば","きよめらるべし","３．地につく宝を　捨つるはやすし","命の小道を","たどる身なれば","４．ただ主に頼りて　暮らすは楽し","かなたの国まで","導きたまわん"]},"174":{"jp_num":331,"title_jp":"331.　千歳の岩よ（３０７）","lines":["１．千歳の岩よ","わが身をかこめ","さかれし脇の　血潮と水に","罪もけがれも　洗いきよめよ","２．かよわきわれは","おきてに堪えず","もゆる心も　たぎつ涙も","罪をあがなう　力はあらず","３．十字架ならで","たのむかげなき","わびしきわれを","あわれみたまえ","み救いなくば","生くるすべなし","４．世にあるうちも","世を去るときも","知らぬよみにも","さばきの日にも","千歳の岩よ","わが身をかこめ"]},"175":{"jp_num":332,"title_jp":"332.　より近くわが主の（４５１）","lines":["１．より近くわが主の","みもとに歩みゆかば","み腕にいだかれて","まことの安きを受けん","まことの安きを受けん","２．より近くわが主の","十字架を仰ぐわれは","流されし血による","ゆるしと恵みを受けん","ゆるしと恵みを受けん","３．より近くわが主の","みすがた見させたまえ","わが誇りくだきて","こころに宿りたまえ","こころに宿りたまえ","４．より近くわが主の","みそばにおらせたまえ","とこしえのみ国に","安けく住ませたまえ","安けく住ませたまえ"]},"184":{"jp_num":334,"title_jp":"334.　主よわが主よ（２５５）","lines":["１.　主よわが主よ　愛の主よ","主はわが身の　救いぬし","（くりかえし）","かくまで主を　愛するは","今日はじめの　ここちして","２．主は十字架を　まず負いて","愛のみ手を　のべたもう","３．生けるときも　死ぬる日も","声のかぎり　かく歌わん","４．たまのかむり　受くるとき","この歌をば　主にささげん"]},"325":{"jp_num":339,"title_jp":"339.　かいぬしわが主よ（）","lines":["１．かいぬしわが主よ　迷うわれらを","若草の野辺に　導きたまえ","われらを守りて　やしないたまえ","われらは主のもの　主にあがなわる","２．よき友となりて　つねに導き","まよわばたずねて　引き返りませ","われらの祈りを　受け入れたまえ","われらは主のもの　ただ主にたよる","３．ゆるしのみ誓い　救いの恵み","きよむる力は　みな主にぞある","われらをあがない　いのちをたもう","われらは主のもの　主にありて生く","４．みいつくしみをば　われらに満たし","今よりみ旨を　なさしめたまえ","われらをあわれむ　み恵み深し","われらは主のもの　主をのみ愛す"]},"190":{"jp_num":340,"title_jp":"340.　恵みの泉よ（５８０）","lines":["１．恵みの泉よ　わが君イェスよ","かわけるこの身を　うるおしたまえ","われらの望みを　主イェスにおけば","平和とよろこび　こころに満ちる","２．いのちの牧者よ　わが君イェスよ","安けくみ国へ　導きたまえ","さまよう羊を　主イェスはさがし","み腕にいだきて　受け入れたもう","３．み国の王なる　わが君イェスよ","とうときみ旨を　なさしめたまえ","日ごとに恵みを　主イェスは与え","みもとに引き寄せ　憩わせたもう"]},"281":{"jp_num":344,"title_jp":"344.　主よみもとに（４４６）","lines":["１．主よみもとに　近づかん","のぼる道は　十字架に","ありともなど　悲しむべき","主よみもとに　近づかん","２．さすらう間に　日は暮れ","石の上の　かりねの","夢にもなお　天を望み","主よみもとに　近づかん","３．主のつかいは　みそらに","かようはしの　上より","招きぬれば　いざのぼりて","主よみもとに　近づかん","４．目覚めてのち　枕の","石をたてて　恵みを","いよよせつに","たたえつつぞ","主よみもとに　近づかん"]},"323":{"jp_num":346,"title_jp":"346.　いつくしみ深き（４６９）","lines":["１.　いつくしみ深き","主の手にひかれて","この世のたびじを","歩むぞうれしき","（くりかえし）","いつくしみ深き","主の手にひかれて","みあとに従い","世のたびじ歩まん","２．さびしき野辺にも","にぎわう里にも","主はともにまして","われをぞみちびく","３．けわしき山路も","おぐらき谷間も","主の手にすがりて","安けくすぎまし"]},"292":{"jp_num":347,"title_jp":"347.　わがたましいを","lines":["１．わがたましいを","愛するイェスよ","波はさままき　風吹き荒れて","沈むばかりの　この身を守り","天のみなとに　みちびきたまえ","２．われにはほかの","かくれ家あらず","頼るかたなき　このたましいを","ゆだねまつれば　みいつくしみの","つばさのかげに　やどらせたまえ","３．わが身は全く　けがれにそめど","君はまことと　恵みに満ちて","われの内とを　ことごときよめ","疲れしたまを　なぐさめたまわん","４．君はいのちの　みなもとなれば","たえずわき出で　こころにあふれ","われをうるおし　かわきをとどめ","とこしえまでも　安きをたまえ"]},"272":{"jp_num":349,"title_jp":"349.　安かれ　わがたましいよ","lines":["１．安かれ　わがたましいよ","主イェスは　ともにいませば","おおしく　主の十字架を","負いつつ　しのび進め","主イェスは　いばらの道","み手もて　みちびきたもう","２．安かれ　わがたましいよ","主イェスの　み言葉たより","悩みも　あつき雲も","恐れず　いさみ進め","主イェスは　風も波も","しずめて　おさめたもう","３．安かれ　わがたましいよ","主イェスの　み国きたりて","かなしみ　悩みは去り","よろこび　愛にあふる","涙も　痛みもなき","いのちの　朝を迎えん"]},"290":{"jp_num":350,"title_jp":"350.　恵み深き主のほか（２４６）","lines":["１.　恵み深き　主のほか","たれかわれを　なぐさめん","（くりかえし）","わが主わが神　恵みたまえ","ただ頼りゆく　わが身を","２．わが主ともに　いまさば","悪のちから　おそれじ","３．きよきみむね　おしえて","果たしたまえ　みちかい","４．とうとき主よ　われをば","君のものと　したまえ"]},"265":{"jp_num":351,"title_jp":"351.　主イェスはわれの（１０８）","lines":["１.　主イェスはわれの　こよなき友","常にかわりなく　愛をそそぎ","みそばに引き寄せ　ささえたもう","ともに宿るは　主とわれ","２．悩みに沈む　よわきわれは","助けを求めて　み手にすがる","主は光の道　ゆかせたもう","ともに歩むは　主とわれ","３．苦しみ悩み　よろこびをも","つつみ隠さずに　主にうち明けん","わがなすべきこと　しめしたもう","ともに語るは　主とわれ","４．主の愛を世に　伝えるため","み言葉たずさえ　出でゆくとき","われらのくちびる　清めたもう","ともに働く　主とわれ"]},"286":{"jp_num":352,"title_jp":"352.　静けき祈りの（３７６）","lines":["１．静けき祈りの　時はいとたのし","悩みある世より　われを呼びいだし","うちなる悲しみ　苦しみすべてを","み神に伝えて　こころは安けし","２．静けき祈りの　時はいとたのし","さまよいいでたる　わがたまを救い","あやうき道より　ともない帰りて","こころむるものの　罠をのがれしむ","３．静けき祈りの　時はいとたのし","そびゆるピスガの　山のたかねより","ふるさとながめて　のぼりゆく日まで","なぐさめを与え　よろこびを満たす"]},"295":{"jp_num":355,"title_jp":"355.　祈りの言葉（４５３）","lines":["１.　祈りの言葉","われにも教え","主イェスのごとく","ならせたまえ","（くりかえし）","主の姿に　その姿に","変えたまえ日々","主の姿に","２．終わりのときの","近きを教え","み旨をわれに","なさせたまえ","３．主イェスの愛を","こころに満たし","み国にわれを","救いたまえ"]},"336":{"jp_num":358,"title_jp":"358.　イェス君イェス君（４４４）","lines":["１.　イェス君イェス君　み救いに","われをももらさで","入れたまえ","（くりかえし）","主よ主よ　ききたまえ","くだけし心の　わが祈り","２．み前に打ちふし　わがくゆる","心のなげきに　こたえませ","３．君のいさおにぞ　ただ頼らん","かよわきこの身を　助けませ","４．望みのもとなる　主のほかに","あめにもつちにも　救いなし"]},"334":{"jp_num":362,"title_jp":"362.　なしたまえみ旨を（２４５）","lines":["１.　なしたまえみ旨を","造りぬしわが主よ","我はただその手の","内にある土くれ","２．なしたまえみ旨を","助けぬしわが主よ","み心にそうまで","練りたまえこの身を","３．なしたまえみ旨を","いやしぬしわが主よ","きずつきし心を","すこやかにしたまえ","４．なしたまえみ旨を","救い主わが主よ","わがうつわ満たして","主のものとしたまえ"]},"177":{"jp_num":363,"title_jp":"363.　我は主のものなれば  (253)","lines":["１.　我は主のものなれば　み声に従い","主を愛し主を目指し　信じて歩まん","（くりかえし）","主イェスの十字架に　近づけたまえ","愛する主のそば近く　導きたまえ","２．わが心わが思い　すべてをささげて","イエスのわざ覚えつつ　よろこび進まん","３．いつくしみ深き主は　わがよき友なり","主の前にひざまずき　よろこび祈らん"]},"187":{"jp_num":364,"title_jp":"364.　キリストには代えられません（２６９）","lines":["１.　キリストには","代えられません","世の宝もまた富も","このお方がわたしに","代わって死んだゆえです","（くりかえし）","世の楽しみよ去れ","世のほまれよ行け","キリストには代えられません","世のなにものも","２．キリストには代えられません","有名な人になることも","人のほめる言葉も","この心をひきません","３．キリストには代えられません","いかに美しいものも","このお方で心の","満たされてある今は"]},"179":{"jp_num":375,"title_jp":"375.　この世の楽しみ（２７１）","lines":["１.　この世の楽しみ","さそうときも","ただ主を見上げて","従いゆかん","（くりかえし）","愛するイェスよ","そのみ姿を","うつさせたまえ","わが心に","２．主はわが重荷を","ともにおいて","愛もてつかえる","者としたもう","３．力を尽くして","使命果たし","わが主の救いを","かたり伝えん"]},"321":{"jp_num":378,"title_jp":"378.　うつり行く時の間も（４２５）","lines":["１．うつり行く時の間も","悩みに勝つ力","父より受けし　われは","心に恐れなし","愛に満てる　み神は","恵みを日々与え","悩み苦しむ時も","いこいと安きたもう","２．日々主はそばにいまし","わが身をあわれみて","すべての重荷を負い","なぐさめ助けたもう","力は日ごとに","なが求めにしたいて","増し加わらんと主は","われに誓いたもう","３．悩みはげしき時も","主の約束たのみ","安けく過ぎ行くため","主よみ言葉たまえ","疲れし時に助け","み手にすがるわれを","つねに導きたまえ","み国に入る日まで"]},"104":{"jp_num":380,"title_jp":"380.　けわしき世の旅に (391)","lines":["１.　けわしき世の旅に","行き悩むときも","主は希望与えたもう","やさしきわが友","（くりかえし）","主イェスはわれらの","おそれをのぞき","み手を伸べてそば近く","引き寄せたもう","２．われらを苦しめる","こころの重荷を","主はにない支えたもう","やさしきわが友","３．別れのさびしさに","悲しみなげく日","主は胸の痛み知る","やさしきわが友"]},"189":{"jp_num":384,"title_jp":"384.　主よ終わりまで（２５６）","lines":["１.　主よ終わりまで仕えまつらん","みそば離れず　おらせたまえ","世の戦いは　はげしくとも","み旗のもとに　立たせたまえ","２．うき世の栄え　目をまどわし","いざないの声　耳に満ちて","こころむるもの　内とにあり","主よわが盾と　ならせたまえ","３．静かにきよき　み声をもて","名利のあらし　しずめたまえ","心にさわぐ　波はなぎて","さやかにうつさん　主のみ旨を","４．主よ今ここに　誓いを立て","しもべとなりて　仕えまつる","世にあるかぎり　この心を","常にかわらず　持たせたまえ"]},"345":{"jp_num":386,"title_jp":"386.　イェスよわがすべて（３０１）","lines":["１.　イェスはわがすべて","わがよろこび","主イェスの力に　頼り歩まん","悲しみの日にも","よろこび与える","わがよき友なる　主イェス","２．イェスはわがすべて","わがなぐさめ","悩めるときにも　近くいます","涙をぬぐいて　はげまし与える","わがよき友なる　主イェス","３．イェスはわがすべて","わがあがない","命の限りに　頼り続けん","昼夜　わかたず","目を注ぎたもう","わがよき友なる　主イェス"]},"61":{"jp_num":387,"title_jp":"387.　神ともにいまして（３７）","lines":["１.　神ともにいまして","行く道を守り","天のみかてもて","力を与えませ","（くりかえし）","また会う日まで","また会う日まで","神の守り","なが身をはなれざれ","２．荒れ野を行くときも","あらし吹くときも","行く手をしめして","たえず　みちびきませ","３．みかどに入る日まで","いつくしみひろき","みつばさのもとに","たえず　はぐくみませ"]},"255":{"jp_num":395,"title_jp":"395.　まもなくかなたの（３２８）","lines":["１.　まもなくかなたの","流れのそばで","楽しく会いましょう","また友達と","（くりかえし）","神様のそばの","きれいなきれいな川で","みんなで集まる日の","ああなつかしや","２．水晶よりすき通る","流れのそばで","主を賛美しましょう","み使いたちと","３．銀のように光る流れのそばで","お目にかかりましょう","救いの君に","４．よいことを励み流れのそばで","お受けいたしましょう","玉のかむりを"]},"251":{"jp_num":414,"title_jp":"414.　この世のいのちは（３２６）","lines":["１.　この世のいのちは","いつしか絶えても","主にある聖徒は","み国に目覚める","（くりかえし）","その時わが主の","み顔を仰ぎて","救いの恵みを","感謝したたえよ","２．地にある住みかは","いつしかくちても","主イェスのみ国は","われらのふるさと","３．ともしび灯して","主の日に備えよ","報いを受ける日","よろこび迎えよ"]},"258":{"jp_num":413,"title_jp":"413.　わが罪のために（１６２）","lines":["１.　わが罪のために","見うせたまいし","主を拝しまつる","日ぞなつかしき","（くりかえし）","うるわしき星の","かなたにゆきて","まのあたり君を","拝しまつらなん","２．見るところ今は","かすかなれども","その日には顔を","合わせて相見ん","３．輝くみ顔を","拝しまつらば","うれいと悩みの","雲は消えうせん","４．げにわれの望み","われのよろこび","主を拝しまつる","日はいや近し"]},"260":{"jp_num":415,"title_jp":"415.　あまつみ国は（３３２）","lines":["１.　あまつい国は","とこしえまで","暗き夜なき　楽しき国","（くりかえし）","やがて夜なき","み国に入らば","神は涙を　ぬぐいたまわん","２．たえず流れる","いのちの川","とじることなき","真珠の門","３．神の子羊","み座につけば","あまつ都に　光満ちる"]},"256":{"jp_num":418,"title_jp":"418.　空にひびく　ほめ歌は","lines":["１.　空にひびく　ほめ歌は","み使いらの　調べなり","聖徒たちを　迎えたもう","たのしき歌　世にひびかん","２．河の岸に　われ立ちて","きよき国を　待ち望む","み使いらの　歌声に","われもともに　入れたまえ","３．波立つ世を　主とともに","恐れずわれ　こえてゆかん","神の国に　のぼりゆき","み使いらと　ほめ歌わん"]},"384":{"jp_num":424,"title_jp":"424.　主イェスは来たもう（４１９）","lines":["１．主イェスは来たもう","よろこびたたえよ","主の民つどいて","救いを楽しめ","（くりかえし）","主イェスは来たもう","よろこび迎えよ","よろこび迎えよ","２．主イェスは来たもう","救いの日近し","ヨベルの知らせを","世界に伝えよ","３．主イェスは来たもう","心を合わせて","栄えの主の日を","よろこびたたえよ"]},"120":{"jp_num":425,"title_jp":"425.　こころして待て","lines":["１．心して待て　主のみ民よ","日はかたむきて","夜はせまりぬ","やがて花むこ","来たりたまわん","ゆめなむすびそ","しばしなれば","２．ながともしびに","あぶら満たし","救いのために　備えをせよ","きけや呼ぶ声　主は近しと","よろこびいでて　迎えまつれ","３．きよき光の　わが主イェスよ","地をおおいにし　闇をはらい","待ちに待たれし　救いの日の","あしたと早く　なさせたまえ"]},"385":{"jp_num":436,"title_jp":"436.　キリストは来たりたもう（１８１）","lines":["１．キリストは来たりたもう","これぞわが希望","み言葉を信じつつ","ともに待ち望む","すべての民よ","よろこびうたえ","救いの君を","ハレルヤ　うたえ","キリストは来たりたもう","これぞわが希望","２．キリストは愛により","われら主の家族","神の国望みつつ","ともに主に仕えん","信仰　希望　愛に結ばれ","こころを合わせ","ハレルヤうたえ","キリストの愛により","われら主の家族"]},"388":{"jp_num":427,"title_jp":"427.　世の終わりのラッパ（１６９）","lines":["１．世の終わりのラッパ","鳴り渡る時","世はとこ世の朝となり","救われし者は","四方のすみより","すべて主のもとに呼ばれん","（くりかえし）","その時わが名も　その時わが名も","その時わが名も","呼ばれなば必ずあらん","２．そのとき眠れる","聖徒よみがえり","栄えのからだに変わり","われらもともに","たずさえあげられ","空にて主に会いまつらん","３．世のわざを終えて","天ついこいに","招かるる日近ければ","なおも主の愛を　世びとに語り","み栄えのために尽くさん"]},"210":{"jp_num":430,"title_jp":"430.　救いのおとずれ（１７９）","lines":["１.　救いのおとずれ","全地にひびき","恵みの光は　暗きを照らす","平和の主イェスは","ふたたび来たもう","ふたたび来たもう","２．われらに代わりて","十字架にかかり","重荷をにないし　み姿つたえん","栄えの主イェスは","ふたたび来たもう","ふたたび来たもう","３．天使の調べに","こころを合わせ","よろこぼ迎えよ　勝利の君を","希望の主イェスは","ふたたび来たもう","ふたたび来たもう"]},"121":{"jp_num":432,"title_jp":"432.　再臨の　しるしは見えて（１６５）","lines":["１．再臨のしるしは見えて","そのときの　近きをさとる","約束の　主イェスは来たる","その日近し","（くりかえし）","やがて　主イェスは来たる","うたえ　ハレルヤ　ハレルヤ","雲に乗りて　間もなく来たる","君を迎えん","２．世の終わり　戸口にありと","み言葉の　予言は告げる","主の救い　間もなく来たる","その日近し","３．ともしびを　灯して備え","大いなる　主の日を迎えん","目を覚まし　よろこびうたえ","その日近し"]},"118":{"jp_num":433,"title_jp":"433.　目覚めよわが友（１６３）","lines":["１．目覚めよわが友","み国は近づく","ともしび灯して","主の日に備えよ","（くりかえし）","見よ　主　主来たもう","栄えの主イェスを","よろこび迎えよ","見よ　主　主来たもう","２．主イェスはわれらを","あがないたまえり","救いのみわざを","感謝したたえよ","３．ふたたび来たもう","主イェスを待つ民","主の日は近しと","世界に伝えよ"]}}};
+
+// API key for dynamic loading (replace with your new key after revoking the shared one)
+const API_KEY = 'TU_API_KEY_AQUI';
+
+const {esp_titles, top_hymns, esp_to_jp} = HYMNAL_DATA;
+
+// Local storage for user edits to Japanese
+function loadUserJP(){try{return JSON.parse(localStorage.getItem('rebattery_jp')||'{}')}catch{return{}}}
+function saveUserJP(data){try{localStorage.setItem('rebattery_jp',JSON.stringify(data))}catch{}}
+let userJP = loadUserJP();
+
+// Language display state
+let showEsp = true, showJpn = true;
+
+// ══════════════════════════════════════════
+//  FURIGANA
+// ══════════════════════════════════════════
+const FG={
+  '十字架':'じゅうじか','救い主':'すくいぬし','聖霊':'せいれい',
+  '安息日':'あんそくにち','栄光':'えいこう','感謝':'かんしゃ',
+  '信仰':'しんこう','平和':'へいわ','再臨':'さいりん',
+  '約束':'やくそく','復活':'ふっかつ','祝福':'しゅくふく',
+  '賛美':'さんび','礼拝':'れいはい','希望':'きぼう',
+  '世界':'せかい','血潮':'ちしお','永遠':'えいえん',
+  '太陽':'たいよう','言葉':'ことば','喜び':'よろこび',
+  '祈り':'いのり','恵み':'めぐみ','天地':'あめつち',
+  '光':'ひかり','力':'ちから','声':'こえ','心':'こころ',
+  '命':'いのち','道':'みち','歌':'うた',
+  '神':'かみ','主':'しゅ','父':'ちち','罪':'つみ',
+  '血':'ち','国':'くに','民':'たみ','世':'よ',
+  '天':'てん','地':'ち','聖':'きよ','霊':'れい',
+  '愛':'あい','水':'みず','花':'はな','空':'そら',
+  '海':'うみ','山':'やま','星':'ほし','月':'つき',
+  '風':'かぜ','朝':'あさ','夕':'ゆう','夜':'よる',
+  '日':'ひ','友':'とも','子':'こ','羊':'ひつじ',
+  '岩':'いわ','泉':'いずみ','川':'かわ','門':'もん',
+  '草':'くさ','木':'き','鳥':'とり','波':'なみ',
+  '野':'の','丘':'おか','涙':'なみだ','夢':'ゆめ',
+};
+const FGK=Object.keys(FG).sort((a,b)=>b.length-a.length);
+const FGP=new RegExp('('+FGK.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')','g');
+function addFG(html){
+  return html.replace(FGP,m=>{const r=FG[m];return r?`<ruby>${m}<rt>${r}</rt></ruby>`:m});
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+const CHORUS_P=/くりかえし|コーラス/;
+const HALLE_P=/ハレルヤ|アーメン|ノエル|グロリア|アレルヤ|ホザナ/;
+const VNUM_P=/^[１２３４５６７８91-9][.．、\s\u3000]/;
+
+// ══════════════════════════════════════════
+//  STANZA SPLITTER (Japanese)
+// ══════════════════════════════════════════
+function splitStanzas(lines){
+  const stanzas=[],VP=/^[１２３４５６７８91-9][.．]/,CP=/（くりかえし）|（コーラス）/;
+  let cur=[];
+  for(const raw of lines){
+    const l=raw.trim(); if(!l) continue;
+    if((VP.test(l)||CP.test(l))&&cur.length){stanzas.push(cur);cur=[l];}
+    else cur.push(l);
+  }
+  if(cur.length) stanzas.push(cur);
+  return stanzas.length?stanzas:[lines];
+}
+
+// Stanza splitter for Spanish verses
+function espStanzaIndex(verses,si){return verses&&verses[si]?verses[si]:null}
+
+// ══════════════════════════════════════════
+//  SLIDE STATE
+// ══════════════════════════════════════════
+let currentEspNum = null;   // current Spanish hymn number (1-695)
+let currentStanzaIdx = 0;
+let slideCache = {};        // espNum -> {esp_stanzas, jp_stanzas, title_jp}
+let currentSlideEl = document.getElementById('slide-welcome');
+const slidesWrap = document.getElementById('slides-wrap');
+
+function totalStanzas(espNum){
+  const c = slideCache[espNum]; if(!c) return 1;
+  const espSt = (c.esp_stanzas||[]).length;
+  const jpSt  = (c.jp_stanzas||[]).length;
+  return Math.max(espSt, jpSt, 1);
+}
+
+// ══════════════════════════════════════════
+//  FETCH LYRICS via Claude API
+// ══════════════════════════════════════════
+async function fetchLyrics(espNum, title){
+  if(API_KEY === 'TU_API_KEY_AQUI') return null;
+  try{
+    const prompt = `Eres un experto en himnos adventistas. Dame la letra COMPLETA del himno adventista número ${espNum} "${title}" del Himnario Adventista en español (edición 2009), exactamente como está en el himnario.
+
+Responde SOLO en JSON válido, sin markdown, sin explicaciones:
+{
+  "title": "título exacto",
+  "verses": [
+    ["línea 1 estrofa 1","línea 2 estrofa 1","..."],
+    ["línea 1 estrofa 2","..."]
+  ],
+  "chorus": ["línea 1 coro","línea 2 coro"] 
+}
+Si no tiene coro, "chorus" debe ser null. Cada estrofa es un array de strings. Solo el JSON, nada más.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    if(!res.ok) return null;
+    const data = await res.json();
+    const text = data.content?.find(c=>c.type==='text')?.text||'';
+    const clean = text.replace(/```json|```/g,'').trim();
+    return JSON.parse(clean);
+  }catch(e){return null;}
+}
+
+// ══════════════════════════════════════════
+//  BUILD SLIDE CACHE ENTRY
+// ══════════════════════════════════════════
+async function buildCache(espNum){
+  if(slideCache[espNum]) return;
+  const title = esp_titles[String(espNum)]||`Himno ${espNum}`;
+  let espData = null;
+  // Check hardcoded
+  if(top_hymns[String(espNum)]){
+    espData = top_hymns[String(espNum)];
+  } else {
+    // Try user cache in localStorage
+    const stored = localStorage.getItem(`hymn_esp_${espNum}`);
+    if(stored){try{espData=JSON.parse(stored);}catch{}}
+  }
+  // Get Japanese
+  const jpBase = esp_to_jp[String(espNum)];
+  // User edits override
+  const userEdit = userJP[String(espNum)];
+  let jp_stanzas=[], title_jp='';
+  if(userEdit){
+    title_jp = userEdit.title||'';
+    jp_stanzas = splitStanzas(userEdit.lines||[]);
+  } else if(jpBase){
+    title_jp = jpBase.title_jp||'';
+    jp_stanzas = splitStanzas(jpBase.lines||[]);
+  }
+  // Build ESP stanzas
+  let esp_stanzas=[];
+  if(espData){
+    esp_stanzas = espData.verses||[];
+    if(espData.chorus) esp_stanzas = esp_stanzas.flatMap((v,i)=>i===0?[v,espData.chorus]:[espData.chorus,v]).filter((v,i,a)=>JSON.stringify(v)!==JSON.stringify(a[i-1]||null));
+  }
+  slideCache[espNum] = {title, title_jp, esp_stanzas, jp_stanzas, esp_loaded:!!espData};
+  // If no ESP data, fetch asynchronously
+  if(!espData){
+    fetchLyrics(espNum, title).then(data=>{
+      if(data){
+        // Cache in localStorage
+        try{localStorage.setItem(`hymn_esp_${espNum}`,JSON.stringify(data));}catch{}
+        let stanzas = data.verses||[];
+        if(data.chorus) stanzas = stanzas.flatMap((v,i)=>i===0?[v,data.chorus]:[data.chorus,v]).filter((v,i,a)=>JSON.stringify(v)!==JSON.stringify(a[i-1]||null));
+        slideCache[espNum].esp_stanzas = stanzas;
+        slideCache[espNum].esp_loaded = true;
+        if(currentEspNum===espNum) renderCurrentSlide(false);
+      }
+    });
+  }
+}
+
+// ══════════════════════════════════════════
+//  RENDER SLIDE
+// ══════════════════════════════════════════
+function renderCurrentSlide(animate=true){
+  if(!currentEspNum){showSlide(document.getElementById('slide-welcome'));return;}
+  const c = slideCache[currentEspNum]; if(!c) return;
+  const si = currentStanzaIdx;
+  const tot = totalStanzas(currentEspNum);
+  const espArr = (c.esp_stanzas||[])[si]||null;
+  const jpArr  = (c.jp_stanzas||[])[si]||null;
+
+  // Get or create slide element
+  const slideId = `slide-${currentEspNum}`;
+  let sl = document.getElementById(slideId);
+  if(!sl){
+    sl = document.createElement('div');
+    sl.id = slideId;
+    sl.className = 'slide hymn-slide';
+    slidesWrap.appendChild(sl);
+  }
+
+  // Font sizes
+  const espLines = espArr?espArr.length:0;
+  const jpLines  = jpArr?jpArr.length:0;
+  const maxLines = (showEsp&&showJpn)?(espLines+jpLines):showEsp?espLines:jpLines;
+  let fs;
+  if(maxLines<=3)fs='clamp(26px,5.5vw,50px)';
+  else if(maxLines<=5)fs='clamp(22px,4.5vw,42px)';
+  else if(maxLines<=7)fs='clamp(18px,3.8vw,35px)';
+  else if(maxLines<=10)fs='clamp(16px,3.2vw,28px)';
+  else if(maxLines<=14)fs='clamp(13px,2.6vw,23px)';
+  else fs='clamp(11px,2.2vw,19px)';
+  const fsSm=`calc(${fs} * .82)`;
+
+  // Dots
+  const dots = tot>1?Array.from({length:Math.min(tot,12)},(_,i)=>`<div class="sdot${i===si?' on':''}"></div>`).join(''):'';
+  const dotsHtml = tot>1?`<div class="stanza-dots">${dots}</div>`:'';
+
+  // ESP lines HTML
+  function espLinesHTML(){
+    if(!espArr||!showEsp) return '';
+    const isChorus = typeof espArr[0]==='string'&&/Coro|Estribillo/.test(espArr[0]||'');
+    return espArr.map(l=>{
+      const cls = 'll ll-esp'+(isChorus?' ll-chorus-esp':'');
+      return `<div class="${cls}" style="font-size:${fs}">${esc(l)}</div>`;
+    }).join('');
+  }
+  // JP lines HTML
+  function jpLinesHTML(){
+    if(!jpArr||!showJpn) return '';
+    return jpArr.map(raw=>{
+      const l=raw.trim().replace(/　/g,'　');
+      const isCh=CHORUS_P.test(l),isHal=HALLE_P.test(l),isVN=VNUM_P.test(l);
+      let cls='ll ll-jp';
+      if(isCh)cls+=' ll-chorus-jp';
+      else if(isHal)cls+=' ll-halle';
+      const fsMod=isCh||isVN?fsSm:fs;
+      return `<div class="${cls}" style="font-size:${fsMod}">${addFG(esc(l))}</div>`;
+    }).join('');
+  }
+
+  // Loading indicator if ESP not loaded
+  const loadingHtml = (!c.esp_loaded&&showEsp&&API_KEY!=='TU_API_KEY_AQUI')
+    ?`<div class="ll ll-loading" style="font-size:${fsSm}">Cargando letra...</div>`:'';
+  const noApiHtml = (!c.esp_loaded&&showEsp&&API_KEY==='TU_API_KEY_AQUI')
+    ?`<div class="ll ll-err" style="font-size:${fsSm}">Sin API key — letra no disponible</div>`:'';
+
+  const hasBoth = showEsp&&showJpn&&espArr&&jpArr;
+  let lyricsHTML='';
+  if(hasBoth){
+    lyricsHTML=`<div class="stanza-block"><div class="lang-esp">${espLinesHTML()}${loadingHtml}${noApiHtml}</div><div class="lang-divider"></div><div class="lang-jp">${jpLinesHTML()}</div></div>`;
+  } else {
+    lyricsHTML=`<div class="stanza-block">${espLinesHTML()||jpLinesHTML()}${loadingHtml}${noApiHtml}</div>`;
+  }
+
+  sl.innerHTML=`
+    <div class="hymn-hdr">
+      <div class="hymn-num-badge">${currentEspNum}</div>
+      <div class="hymn-titles">
+        ${showEsp?`<div class="hymn-title-esp">${esc(c.title)}</div>`:''}
+        ${showJpn&&c.title_jp?`<div class="hymn-title-jp">${esc(c.title_jp)}</div>`:''}
+      </div>
+      <div class="hymn-stanza-info">${si+1}/${tot}${dotsHtml}</div>
+    </div>
+    <div class="lyrics-body">${lyricsHTML}</div>
+    <div class="slide-footer"><div class="sf-line"></div><span class="sf-pg">${si+1} / ${tot}</span><div class="sf-line r"></div></div>
+  `;
+
+  showSlide(sl);
+  if(animate){
+    const lns=sl.querySelectorAll('.ll');
+    lns.forEach(l=>l.classList.remove('v'));
+    lns.forEach((l,i)=>setTimeout(()=>l.classList.add('v'),30+i*55));
+  } else {
+    sl.querySelectorAll('.ll').forEach(l=>l.classList.add('v'));
+  }
+  document.getElementById('hdr-num').textContent=`${currentEspNum} / 695`;
+  document.getElementById('pg').textContent=`${si+1} / ${tot}`;
+  document.getElementById('btn-prev').disabled=currentEspNum===1&&si===0;
+  document.getElementById('btn-next').disabled=false;
+}
+
+function showSlide(el){
+  if(currentSlideEl===el) return;
+  currentSlideEl.classList.remove('active');
+  el.classList.add('active');
+  currentSlideEl=el;
+}
+
+// ══════════════════════════════════════════
+//  NAVIGATE
+// ══════════════════════════════════════════
+async function openHymn(espNum, stanza=0){
+  hideBrowse();
+  showLoading();
+  await buildCache(espNum);
+  currentEspNum=espNum;
+  currentStanzaIdx=Math.max(0,Math.min(stanza,totalStanzas(espNum)-1));
+  renderCurrentSlide(true);
+  updateSidebar();
+  hideLoading();
+}
+
+function nextStanza(){
+  if(!currentEspNum) return;
+  const tot=totalStanzas(currentEspNum);
+  if(currentStanzaIdx<tot-1){currentStanzaIdx++;renderCurrentSlide(true);}
+  else {
+    // Move to next hymn
+    const next=currentEspNum<695?currentEspNum+1:null;
+    if(next) openHymn(next,0);
+  }
+}
+function prevStanza(){
+  if(!currentEspNum){return;}
+  if(currentStanzaIdx>0){currentStanzaIdx--;renderCurrentSlide(true);}
+  else {
+    const prev=currentEspNum>1?currentEspNum-1:null;
+    if(prev) openHymn(prev,0);
+    else {currentEspNum=null;currentStanzaIdx=0;showSlide(document.getElementById('slide-welcome'));}
+  }
+}
+
+function showLoading(){document.getElementById('loading').classList.add('show')}
+function hideLoading(){document.getElementById('loading').classList.remove('show')}
+
+// ══════════════════════════════════════════
+//  SIDEBAR
+// ══════════════════════════════════════════
+const sbList=document.getElementById('sb-list');
+function buildSidebar(filter=''){
+  sbList.innerHTML='';
+  const fl=filter.toLowerCase();
+  for(let n=1;n<=695;n++){
+    const title=esp_titles[String(n)]||`Himno ${n}`;
+    const hasJP=!!(esp_to_jp[String(n)]||userJP[String(n)]);
+    if(fl&&!title.toLowerCase().includes(fl)&&!String(n).includes(fl)) continue;
+    const jpData=esp_to_jp[String(n)];
+    const el=document.createElement('div');
+    el.className='sb-item'+(currentEspNum===n?' cur':'');
+    el.innerHTML=`<span class="sb-num">${n}</span><div><span class="sb-title-esp">${esc(title)}</span>${jpData?`<span class="sb-title-jp">${esc(jpData.title_jp||'')}</span>`:''}</div><div class="${hasJP?'sb-has-jp':'sb-no-jp'}" title="${hasJP?'Tiene japonés':'Sin japonés'}"></div>`;
+    el.addEventListener('click',()=>{openHymn(n,0);closeSidebar();});
+    sbList.appendChild(el);
+  }
+}
+function updateSidebar(){
+  document.querySelectorAll('.sb-item').forEach(el=>{
+    const n=parseInt(el.querySelector('.sb-num').textContent);
+    el.classList.toggle('cur',n===currentEspNum);
+  });
+  const cur=sbList.querySelector('.sb-item.cur');
+  if(cur) cur.scrollIntoView({block:'nearest'});
+}
+buildSidebar();
+
+let sbOpen=false;
+const sb=document.getElementById('sidebar'),ov=document.getElementById('overlay');
+function openSidebar(){sbOpen=true;sb.classList.add('open');ov.classList.add('show');buildSidebar(document.getElementById('sb-search').value)}
+function closeSidebar(){sbOpen=false;sb.classList.remove('open');ov.classList.remove('show')}
+document.getElementById('menu-btn').addEventListener('click',()=>sbOpen?closeSidebar():openSidebar());
+ov.addEventListener('click',closeSidebar);
+document.getElementById('sb-search').addEventListener('input',e=>buildSidebar(e.target.value));
+
+// ══════════════════════════════════════════
+//  BROWSE VIEW
+// ══════════════════════════════════════════
+let browseVisible=false;
+function buildBrowse(){
+  const bv=document.getElementById('browse-view');
+  if(bv.children.length>2) return;
+  const section=document.createElement('div');
+  section.className='browse-section';
+  section.innerHTML='<div class="browse-section-title">Todos los Himnos — 695</div><div class="browse-grid" id="bg-main"></div>';
+  bv.appendChild(section);
+  const grid=document.getElementById('bg-main');
+  for(let n=1;n<=695;n++){
+    const title=esp_titles[String(n)]||`Himno ${n}`;
+    const jpData=esp_to_jp[String(n)]||userJP[String(n)];
+    const card=document.createElement('div');
+    card.className='browse-card';
+    card.innerHTML=`${jpData?'<div class="bc-jp-dot"></div>':''}<div class="bc-num">${n}</div><div class="bc-title">${esc(title)}</div>${jpData?`<div class="bc-jp">${esc((jpData.title_jp||'').substring(0,20))}</div>`:''}`;
+    card.addEventListener('click',()=>{openHymn(n,0);hideBrowse();});
+    grid.appendChild(card);
+  }
+}
+function showBrowse(){browseVisible=true;buildBrowse();document.getElementById('browse-view').classList.add('show');document.getElementById('present-view').classList.add('hidden')}
+function hideBrowse(){browseVisible=false;document.getElementById('browse-view').classList.remove('show');document.getElementById('present-view').classList.remove('hidden')}
+document.getElementById('btn-browse').addEventListener('click',()=>browseVisible?hideBrowse():showBrowse());
+
+// ══════════════════════════════════════════
+//  SEARCH
+// ══════════════════════════════════════════
+const searchEl=document.getElementById('search');
+const srEl=document.getElementById('search-results');
+searchEl.addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();
+  srEl.innerHTML='';
+  if(!q){srEl.style.display='none';return;}
+  srEl.style.display='block';
+  let count=0;
+  for(let n=1;n<=695&&count<12;n++){
+    const title=esp_titles[String(n)]||'';
+    const jpData=esp_to_jp[String(n)];
+    if(title.toLowerCase().includes(q)||String(n)===q||String(n).startsWith(q)){
+      const el=document.createElement('div');el.className='sr-item';
+      el.innerHTML=`<span class="sr-num">${n}</span><div><div class="sr-title-esp">${esc(title)}</div>${jpData?`<div class="sr-title-jp">${esc(jpData.title_jp||'')}</div>`:''}</div>`;
+      el.addEventListener('click',()=>{searchEl.value='';srEl.style.display='none';openHymn(n,0);});
+      srEl.appendChild(el);count++;
+    }
+  }
+  if(count===0){srEl.innerHTML='<div style="padding:10px 16px;color:var(--muted);font-size:.8rem">Sin resultados</div>';}
+});
+document.addEventListener('click',e=>{if(!e.target.closest('#search-wrap'))srEl.style.display='none'});
+
+// ══════════════════════════════════════════
+//  LANGUAGE TOGGLE
+// ══════════════════════════════════════════
+document.querySelectorAll('.lt-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const lang=btn.dataset.lang;
+    if(lang==='esp') showEsp=!showEsp;
+    else showJpn=!showJpn;
+    if(!showEsp&&!showJpn){showEsp=true;showJpn=true;}
+    document.querySelectorAll('.lt-btn').forEach(b=>{
+      b.classList.toggle('on',b.dataset.lang==='esp'?showEsp:showJpn);
+    });
+    if(currentEspNum) renderCurrentSlide(false);
+  });
+});
+
+// ══════════════════════════════════════════
+//  EDITOR
+// ══════════════════════════════════════════
+const ep=document.getElementById('editor-panel');
+document.getElementById('btn-edit').addEventListener('click',()=>{
+  if(!currentEspNum) return;
+  const n=currentEspNum;
+  document.getElementById('ep-num').value=n;
+  const existing=userJP[String(n)]||(esp_to_jp[String(n)]||{});
+  document.getElementById('ep-title-jp').value=existing.title_jp||existing.title||'';
+  document.getElementById('ep-lyrics-jp').value=(existing.lines||[]).join('
+');
+  ep.classList.add('open');ov.classList.add('show');
+});
+document.getElementById('ep-close').addEventListener('click',()=>{ep.classList.remove('open');ov.classList.remove('show')});
+document.getElementById('ep-save').addEventListener('click',()=>{
+  const n=parseInt(document.getElementById('ep-num').value);
+  const title=document.getElementById('ep-title-jp').value.trim();
+  const lines=document.getElementById('ep-lyrics-jp').value.split('
+');
+  userJP[String(n)]={title_jp:title,lines};
+  saveUserJP(userJP);
+  delete slideCache[n];
+  ep.classList.remove('open');ov.classList.remove('show');
+  if(currentEspNum===n){buildCache(n).then(()=>renderCurrentSlide(false));}
+  // Rebuild sidebar
+  buildSidebar(document.getElementById('sb-search').value);
+  alert('✓ Guardado. Los cambios se mostrarán en el himno.');
+});
+
+// ══════════════════════════════════════════
+//  KEYBOARD & TOUCH
+// ══════════════════════════════════════════
+document.getElementById('btn-next').addEventListener('click',nextStanza);
+document.getElementById('btn-prev').addEventListener('click',prevStanza);
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if(e.key==='Escape'){closeSidebar();ep.classList.remove('open');ov.classList.remove('show');hideBrowse();return;}
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextStanza();}
+  if(e.key==='ArrowLeft'){e.preventDefault();prevStanza();}
+  if(e.key.toLowerCase()==='f'){document.documentElement.requestFullscreen?.();}
+  if(e.key>='1'&&e.key<='9'&&e.ctrlKey){openHymn(parseInt(e.key));}
+});
+let tx=0,ty=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>45){dx<0?nextStanza():prevStanza();}
+},{passive:true});
+
+// ══════════════════════════════════════════
+//  BACKGROUND
+// ══════════════════════════════════════════
+const bgc=document.getElementById('bgc'),bgx=bgc.getContext('2d');
+function drawBg(){
+  const W=window.innerWidth,H=window.innerHeight;
+  bgc.width=W;bgc.height=H;
+  bgx.fillStyle='#0C1A28';bgx.fillRect(0,0,W,H);
+  const g=bgx.createRadialGradient(W/2,H/2,H*.05,W/2,H/2,H*.7);
+  g.addColorStop(0,'rgba(20,40,60,.8)');g.addColorStop(1,'rgba(12,26,40,0)');
+  bgx.fillStyle=g;bgx.fillRect(0,0,W,H);
+  bgx.strokeStyle='rgba(201,168,76,.025)';bgx.lineWidth=1;
+  for(let x=0;x<W;x+=80){bgx.beginPath();bgx.moveTo(x,0);bgx.lineTo(x,H);bgx.stroke()}
+  for(let y=0;y<H;y+=80){bgx.beginPath();bgx.moveTo(0,y);bgx.lineTo(W,y);bgx.stroke()}
+  bgx.strokeStyle='rgba(201,168,76,.03)';bgx.lineWidth=22;bgx.lineCap='round';
+  bgx.beginPath();bgx.moveTo(W/2,H*.2);bgx.lineTo(W/2,H*.8);bgx.stroke();
+  bgx.beginPath();bgx.moveTo(W*.28,H*.38);bgx.lineTo(W*.72,H*.38);bgx.stroke();
+}
+window.addEventListener('resize',drawBg);drawBg();
+
+// ══════════════════════════════════════════
+//  PETALS
+// ══════════════════════════════════════════
+function petal(){
+  const p=document.createElement('div');p.className='petal';
+  p.style.left=Math.random()*100+'vw';
+  const d=14+Math.random()*18,dl=Math.random()*20;
+  p.style.animationDuration=d+'s';p.style.animationDelay=dl+'s';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),(d+dl)*1000+500);
+}
+for(let i=0;i<6;i++) petal();
+setInterval(petal,4000);
+
+// ══════════════════════════════════════════
+//  INIT — preload first few hymns
+// ══════════════════════════════════════════
+(async()=>{
+  // Preload commonly used hardcoded hymns silently
+  const preload=[1,2,3,102,119,158,252,300,499,506];
+  for(const n of preload) await buildCache(n);
+})();
+</script>
+</body>
+</html>

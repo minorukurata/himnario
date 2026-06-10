@@ -570,9 +570,12 @@ rt{font-size:.4em;color:#999;font-family:"Noto Sans JP",sans-serif;font-weight:3
   <div id="browse-view"></div>
   <div id="karaoke-view">
     <div id="kara-top">
-      <div>
-        <div id="kara-title">—</div>
-        <span id="kara-lang-badge">ESP</span>
+      <div style="flex:1;min-width:0">
+        <div id="kara-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+          <span id="kara-lang-badge">ESP</span>
+          <span id="kara-yt-status" style="font-family:Cinzel,serif;font-size:.6rem;color:#aaa"></span>
+        </div>
       </div>
       <div id="kara-controls">
         <button class="kbtn" id="kara-prev-line">← Ant</button>
@@ -580,8 +583,18 @@ rt{font-size:.4em;color:#999;font-family:"Noto Sans JP",sans-serif;font-weight:3
         <button class="kbtn" id="kara-restart">↺</button>
         <button class="kbtn" id="kara-next-line">Sig →</button>
         <button class="kbtn" id="yt-audio-btn">▶ Audio</button>
-        <button class="kbtn" id="btn-timing">⏱ Tiempos</button>
+        <button class="kbtn" id="btn-timing">⏱ Sync</button>
+        <button class="kbtn" id="btn-yt-config">⚙ Video</button>
       </div>
+    </div>
+    <!-- YouTube config row — shown when btn-yt-config is pressed -->
+    <div id="kara-yt-row" style="display:none;padding:6px 10px;border-bottom:1px solid #eee;background:#fafafa;align-items:center;gap:6px;flex-wrap:wrap">
+      <span style="font-family:Cinzel,serif;font-size:.68rem;color:#666;letter-spacing:.05em">YouTube ID:</span>
+      <input id="kara-yt-input" type="text" placeholder="ej: D-x_jE_P2xA" style="flex:1;min-width:120px;padding:5px 8px;border:1px solid #ddd;border-radius:2px;font-family:monospace;font-size:.8rem;outline:none">
+      <span style="font-family:Cinzel,serif;font-size:.65rem;color:#aaa">Título:</span>
+      <input id="kara-yt-titulo" type="text" placeholder="Nombre del video" style="flex:1;min-width:100px;padding:5px 8px;border:1px solid #ddd;border-radius:2px;font-family:Cinzel,serif;font-size:.72rem;outline:none">
+      <button id="kara-yt-save" style="padding:5px 12px;background:#111;border:none;color:#fff;font-family:Cinzel,serif;font-size:.7rem;cursor:pointer;border-radius:2px">Guardar</button>
+      <button id="kara-yt-cancel" style="padding:5px 10px;background:#f5f5f5;border:1px solid #ddd;color:#333;font-family:Cinzel,serif;font-size:.7rem;cursor:pointer;border-radius:2px">✕</button>
     </div>
     <div id="kara-lines"></div>
     <div id="kara-prog-wrap">
@@ -634,6 +647,11 @@ let FG_GLOBAL = {
 let FG_PER_HYMN = {};
 
 // Load JSON files when on http/https
+// Load saved config from localStorage first (works on file://)
+try{
+  const saved=localStorage.getItem('karaoke_config');
+  if(saved) KARAOKE_CONFIG=JSON.parse(saved);
+}catch{}
 if(window.location.protocol !== 'file:'){
   fetch('tiempos.json').then(r=>r.ok?r.json():null).then(d=>{
     if(d) KARAOKE_CONFIG = d;
@@ -1177,9 +1195,17 @@ function openKaraoke(lang){
   ytCurrentLang=lang;
   const ytId=getYoutubeId(currentEspNum,lang);
   const audioBtn=document.getElementById('yt-audio-btn');
-  const timingBtn=document.getElementById('btn-timing');
+  // Always show timing button — works even without YouTube
+  // Show audio button only if YouTube configured
   audioBtn.style.display=ytId?'inline-block':'none';
-  timingBtn.style.display=ytId?'inline-block':'none';
+  // Show YT status
+  const statusEl=document.getElementById('kara-yt-status');
+  if(statusEl) statusEl.textContent=ytId?'▶ con audio':'sin audio';
+  // Pre-fill YouTube config field with current value
+  const currentYtId=ytId||'';
+  document.getElementById('kara-yt-input').value=currentYtId;
+  const currentVer=getActiveVersion(currentEspNum,lang);
+  document.getElementById('kara-yt-titulo').value=currentVer?.titulo||'';
   if(ytId){
     const saved=loadTimestamps(currentEspNum,lang);
     if(saved){loadYoutubeAudio(ytId);}
@@ -1236,10 +1262,19 @@ document.getElementById('yt-audio-btn').addEventListener('click',()=>{
 //  YOUTUBE AUDIO
 // ═══════════════════════════════════════
 let ytCurrentId=null;
-function getYoutubeId(espNum,lang){
+function getActiveVersion(espNum,lang){
   const h=KARAOKE_CONFIG.himnos?.[String(espNum)]?.[lang];
   if(!h||!h.activo) return null;
-  return h.versiones?.[h.activo]?.youtube||null;
+  return h.versiones?.[h.activo]||null;
+}
+function getYoutubeId(espNum,lang){
+  return getActiveVersion(espNum,lang)?.youtube||null;
+}
+function ensureHymnConfig(espNum,lang){
+  const n=String(espNum);
+  if(!KARAOKE_CONFIG.himnos[n]) KARAOKE_CONFIG.himnos[n]={};
+  if(!KARAOKE_CONFIG.himnos[n][lang]) KARAOKE_CONFIG.himnos[n][lang]={activo:null,versiones:{}};
+  return KARAOKE_CONFIG.himnos[n][lang];
 }
 function loadYoutubeAudio(ytId){
   if(audioPlayer){audioPlayer.pause();audioPlayer=null;}
@@ -1353,6 +1388,41 @@ document.getElementById('timing-tap').addEventListener('touchstart',e=>{e.preven
 document.addEventListener('keydown',e=>{if(e.key===' '&&timingMode){e.preventDefault();recordTap();}});
 document.getElementById('timing-close').addEventListener('click',closeTimingOverlay);
 document.getElementById('btn-timing').addEventListener('click',openTimingMode);
+
+// YouTube config in karaoke
+document.getElementById('btn-yt-config').addEventListener('click',()=>{
+  const row=document.getElementById('kara-yt-row');
+  row.style.display=row.style.display==='none'?'flex':'none';
+});
+document.getElementById('kara-yt-cancel').addEventListener('click',()=>{
+  document.getElementById('kara-yt-row').style.display='none';
+});
+document.getElementById('kara-yt-save').addEventListener('click',()=>{
+  if(!currentEspNum) return;
+  const ytId=document.getElementById('kara-yt-input').value.trim();
+  const titulo=document.getElementById('kara-yt-titulo').value.trim();
+  if(!ytId){alert('Ingresá el ID de YouTube (la parte después de ?v= o youtu.be/)');return;}
+  const lang=karaokeLang;
+  const cfg=ensureHymnConfig(currentEspNum,lang);
+  // Check if active version exists, if not create v1
+  if(!cfg.activo||!cfg.versiones[cfg.activo]){
+    cfg.versiones['v1']={titulo:titulo||ytId,youtube:ytId,tiempos:null};
+    cfg.activo='v1';
+  } else {
+    cfg.versiones[cfg.activo].youtube=ytId;
+    if(titulo) cfg.versiones[cfg.activo].titulo=titulo;
+  }
+  // Save to localStorage
+  try{localStorage.setItem('karaoke_config',JSON.stringify(KARAOKE_CONFIG));}catch{}
+  document.getElementById('kara-yt-row').style.display='none';
+  document.getElementById('yt-audio-btn').style.display='inline-block';
+  document.getElementById('kara-yt-status').textContent='▶ con audio';
+  // Auto-load the audio
+  loadYoutubeAudio(ytId);
+  // Show sync hint if no timestamps
+  const saved=loadTimestamps(currentEspNum,lang);
+  if(!saved) showTimingHint();
+});
 
 // JSON export buttons
 document.getElementById('json-download-btn').addEventListener('click',()=>downloadJSON(exportTiemposJSON(),'tiempos.json'));

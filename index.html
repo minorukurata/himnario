@@ -826,6 +826,81 @@ rt{font-size:.38em;color:#888888;font-family:"Noto Sans JP",sans-serif;font-weig
 }
 #btn-settings:hover{color:#333333}
 
+
+/* ─── FURIGANA EDITOR ─── */
+#admin-fg-section{
+  border:1px solid #EEEEEE;border-radius:4px;overflow:hidden;
+}
+#admin-fg-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:#FAFAFA;
+  border-bottom:1px solid #EEEEEE;cursor:pointer;
+  font-family:"Cinzel",serif;
+  -webkit-tap-highlight-color:transparent;
+}
+#admin-fg-hdr:hover{background:#F0F0F0}
+#admin-fg-hdr-title{font-size:.9rem;color:#111111;letter-spacing:.06em}
+#admin-fg-body{display:none;padding:12px 14px;flex-direction:column;gap:12px}
+#admin-fg-body.open{display:flex}
+.fg-tab-bar{display:flex;gap:6px;margin-bottom:4px}
+.fg-tab{
+  padding:4px 12px;font-family:"Cinzel",serif;font-size:.68rem;
+  letter-spacing:.08em;cursor:pointer;border-radius:2px;
+  border:1px solid #DDDDDD;background:transparent;color:#888888;
+}
+.fg-tab.on{background:#111111;color:#FFFFFF;border-color:#111111}
+.fg-table{display:flex;flex-direction:column;gap:0;border:1px solid #EEEEEE;border-radius:3px;overflow:hidden}
+.fg-row{
+  display:flex;align-items:center;gap:0;
+  border-bottom:1px solid #F5F5F5;
+}
+.fg-row:last-child{border-bottom:none}
+.fg-row:hover{background:#FAFAFA}
+.fg-kanji{
+  width:120px;flex-shrink:0;
+  padding:7px 10px;
+  font-family:"Noto Serif JP",serif;font-size:1rem;
+  color:#111111;border-right:1px solid #EEEEEE;
+}
+.fg-reading{
+  flex:1;padding:5px 8px;
+  background:transparent;border:none;outline:none;
+  font-family:"Noto Serif JP",serif;font-size:.85rem;
+  color:#333333;
+}
+.fg-reading:focus{background:#FFFDE7}
+.fg-del{
+  padding:5px 10px;background:transparent;
+  border:none;border-left:1px solid #EEEEEE;
+  color:#CCCCCC;cursor:pointer;font-size:.85rem;
+}
+.fg-del:hover{color:#CC4444;background:#FFF5F5}
+.fg-add-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-top:1px solid #EEEEEE;
+  background:#FAFAFA;
+}
+.fg-new-kanji,.fg-new-reading{
+  padding:5px 8px;border:1px solid #DDDDDD;
+  border-radius:2px;outline:none;
+  font-family:"Noto Serif JP",serif;font-size:.85rem;color:#111111;
+  background:#FFFFFF;
+}
+.fg-new-kanji{width:110px}
+.fg-new-reading{width:120px}
+.fg-add-btn{
+  padding:5px 14px;background:#111111;border:none;
+  color:#FFFFFF;font-family:"Cinzel",serif;font-size:.7rem;
+  letter-spacing:.06em;cursor:pointer;border-radius:2px;
+}
+.fg-add-btn:hover{background:#333333}
+.fg-hymn-sel{
+  width:100%;padding:6px 10px;
+  border:1px solid #DDDDDD;border-radius:2px;
+  font-family:"Cinzel",serif;font-size:.75rem;
+  color:#333333;background:#FFFFFF;outline:none;margin-bottom:8px;
+}
+
 </style>
 </head>
 <body>
@@ -996,39 +1071,51 @@ let userJP = loadUserJP();
 let showEsp = true, showJpn = true;
 
 // ══════════════════════════════════════════
-//  FURIGANA
+//  FURIGANA — loaded from furigana.json
 // ══════════════════════════════════════════
-const FG={
-  '十字架':'じゅうじか','救い主':'すくいぬし','聖霊':'せいれい',
-  '安息日':'あんそくにち','栄光':'えいこう','感謝':'かんしゃ',
-  '信仰':'しんこう','平和':'へいわ','再臨':'さいりん',
-  '約束':'やくそく','復活':'ふっかつ','祝福':'しゅくふく',
-  '賛美':'さんび','礼拝':'れいはい','希望':'きぼう',
-  '世界':'せかい','血潮':'ちしお','永遠':'えいえん',
-  '太陽':'たいよう','言葉':'ことば','喜び':'よろこび',
-  '祈り':'いのり','恵み':'めぐみ','天地':'あめつち',
-  '光':'ひかり','力':'ちから','声':'こえ','心':'こころ',
-  '命':'いのち','道':'みち','歌':'うた',
-  '神':'かみ','主':'しゅ','父':'ちち','罪':'つみ',
-  '血':'ち','国':'くに','民':'たみ','世':'よ',
-  '天':'てん','地':'ち','聖':'きよ','霊':'れい',
-  '愛':'あい','水':'みず','花':'はな','空':'そら',
-  '海':'うみ','山':'やま','星':'ほし','月':'つき',
-  '風':'かぜ','朝':'あさ','夕':'ゆう','夜':'よる',
-  '日':'ひ','友':'とも','子':'こ','羊':'ひつじ',
-  '岩':'いわ','泉':'いずみ','川':'かわ','門':'もん',
-  '草':'くさ','木':'き','鳥':'とり','波':'なみ',
-  '野':'の','丘':'おか','涙':'なみだ','夢':'ゆめ',
-};
-const FGK=Object.keys(FG).sort((a,b)=>b.length-a.length);
-const FGP=new RegExp('('+FGK.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')','g');
-function addFG(html){
-  return html.replace(FGP,m=>{const r=FG[m];return r?`<ruby>${m}<rt>${r}</rt></ruby>`:m});
+let FG_GLOBAL = {};
+let FG_PER_HYMN = {};
+let _fgGlobal = null;
+let _fgCurrent = null;
+let _currentFGHymn = null;
+
+function buildFGPattern(dict){
+  const keys = Object.keys(dict).sort((a,b)=>b.length-a.length);
+  if(!keys.length) return null;
+  const pat = new RegExp('('+keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')','g');
+  return {pat, dict};
 }
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-const CHORUS_P=/くりかえし|コーラス/;
-const HALLE_P=/ハレルヤ|アーメン|ノエル|グロリア|アレルヤ|ホザナ/;
-const VNUM_P=/^[１２３４５６７８91-9][.．、\s\u3000]/;
+
+(async function loadFuriganaJSON(){
+  try{
+    const res = await fetch('furigana.json');
+    if(res.ok){
+      const data = await res.json();
+      FG_GLOBAL = data.global || {};
+      FG_PER_HYMN = data.por_himno || {};
+      _fgGlobal = buildFGPattern(FG_GLOBAL);
+      console.log('furigana.json loaded:', Object.keys(FG_GLOBAL).length, 'entries');
+    }
+  }catch(e){ console.log('furigana.json not found'); }
+})();
+
+function setFuriganaContext(espNum){
+  if(_currentFGHymn === espNum) return;
+  _currentFGHymn = espNum;
+  const merged = {...FG_GLOBAL, ...(FG_PER_HYMN[String(espNum)]||{})};
+  _fgCurrent = buildFGPattern(merged);
+}
+
+function addFG(html, espNum){
+  if(espNum){ setFuriganaContext(espNum); }
+  const ctx = espNum ? _fgCurrent : _fgGlobal;
+  if(!ctx) return html;
+  return html.replace(ctx.pat, m=>{
+    const r = ctx.dict[m];
+    return r ? '<ruby>'+m+'<rt>'+r+'</rt></ruby>' : m;
+  });
+}
+
 
 // ══════════════════════════════════════════
 //  STANZA SPLITTER (Japanese)
@@ -1206,7 +1293,7 @@ function renderCurrentSlide(animate=true){
       if(isCh)cls+=' ll-chorus-jp';
       else if(isHal)cls+=' ll-halle';
       const fsMod=isCh||isVN?fsSm:fs;
-      return `<div class="${cls}" style="font-size:${fsMod}">${addFG(esc(l))}</div>`;
+      return `<div class="${cls}" style="font-size:${fsMod}">${addFG(esc(l), currentEspNum)}</div>`;
     }).join('');
   }
 
@@ -1624,7 +1711,7 @@ function renderKaraLines(){
     div.style.fontSize=fs;
     div.style.marginBottom = isCurrent ? 'clamp(12px,3vh,28px)' : '0';
     div.style.marginTop = isCurrent ? 'clamp(12px,3vh,28px)' : '0';
-    div.innerHTML = line.lang==='jpn' ? addFG(esc(line.text)) : esc(line.text);
+    div.innerHTML = line.lang==='jpn' ? addFG(esc(line.text), currentEspNum) : esc(line.text);
     wrap.appendChild(div);
   }
 
@@ -1969,11 +2056,11 @@ function updateTimingDisplay(){
   const next = lines[idx+1];
 
   document.getElementById('timing-prev').innerHTML =
-    prev ? (prev.lang==='jpn' ? addFG(esc(prev.text)) : esc(prev.text)) : '';
+    prev ? (prev.lang==='jpn' ? addFG(esc(prev.text), currentEspNum) : esc(prev.text)) : '';
   document.getElementById('timing-line').innerHTML =
-    cur  ? (cur.lang==='jpn'  ? addFG(esc(cur.text))  : esc(cur.text))  : '✓ FIN';
+    cur  ? (cur.lang==='jpn'  ? addFG(esc(cur.text), currentEspNum)  : esc(cur.text))  : '✓ FIN';
   document.getElementById('timing-next').innerHTML =
-    next ? (next.lang==='jpn' ? addFG(esc(next.text)) : esc(next.text)) : '';
+    next ? (next.lang==='jpn' ? addFG(esc(next.text), currentEspNum) : esc(next.text)) : '';
 
   const done = idx >= lines.length;
   document.getElementById('timing-tap').textContent = done ? '✓ Guardar' : 'TAP — siguiente línea';
@@ -2370,6 +2457,23 @@ document.getElementById('admin-save-btn')?.addEventListener('click',function(){
 });
 
 // Download button
+// Download furigana.json too
+document.getElementById('admin-fg-dl-btn')?.addEventListener('click',()=>{
+  const data = {
+    version: 1,
+    description: 'Diccionario de furigana — Himnario Adventista',
+    global: FG_GLOBAL,
+    por_himno: FG_PER_HYMN
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='furigana.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
 document.getElementById('admin-dl-btn')?.addEventListener('click',()=>{
   const json = getAdminJSON();
   const blob = new Blob([json],{type:'application/json'});
@@ -2390,6 +2494,162 @@ saveTimestamps = function(espNum, lang, times){
   if(activo && KARAOKE_CONFIG.himnos[String(espNum)][lang].versiones[activo]){
     KARAOKE_CONFIG.himnos[String(espNum)][lang].versiones[activo].tiempos = times;
   }
+};
+
+
+// ══════════════════════════════════════════
+//  FURIGANA EDITOR
+// ══════════════════════════════════════════
+let fgTab = 'global';
+let fgCurrentHymn = null;
+
+// Toggle furigana section
+document.getElementById('admin-fg-hdr')?.addEventListener('click',()=>{
+  document.getElementById('admin-fg-body').classList.toggle('open');
+  renderFGGlobal();
+});
+
+// Tab switching
+document.querySelectorAll('.fg-tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    fgTab = btn.dataset.fgtab;
+    document.querySelectorAll('.fg-tab').forEach(b=>b.classList.toggle('on', b.dataset.fgtab===fgTab));
+    document.getElementById('fg-global-panel').style.display = fgTab==='global'?'':'none';
+    document.getElementById('fg-hymno-panel').style.display = fgTab==='hymno'?'':'none';
+    if(fgTab==='hymno') populateFGHymnoSel();
+  });
+});
+
+// ── Global furigana table ────────────────────────────────────────
+function renderFGGlobal(){
+  const tbl = document.getElementById('fg-global-table');
+  if(!tbl) return;
+  tbl.innerHTML='';
+  const entries = Object.entries(FG_GLOBAL).sort((a,b)=>a[0].localeCompare(b[0],'ja'));
+  for(const [kanji, reading] of entries){
+    tbl.appendChild(fgRow(kanji, reading, 'global', null));
+  }
+}
+
+function fgRow(kanji, reading, scope, hymnNum){
+  const row = document.createElement('div');
+  row.className='fg-row';
+  row.innerHTML = `
+    <div class="fg-kanji">${esc(kanji)}</div>
+    <input class="fg-reading" type="text" value="${esc(reading)}" data-kanji="${esc(kanji)}" data-scope="${scope}" data-hymn="${hymnNum||''}">
+    <button class="fg-del" data-kanji="${esc(kanji)}" data-scope="${scope}" data-hymn="${hymnNum||''}">✕</button>
+  `;
+  row.querySelector('.fg-reading').addEventListener('change', e=>{
+    const k = e.target.dataset.kanji;
+    const s = e.target.dataset.scope;
+    const h = e.target.dataset.hymn;
+    const val = e.target.value.trim();
+    if(s==='global') FG_GLOBAL[k] = val;
+    else if(h){ if(!FG_PER_HYMN[h]) FG_PER_HYMN[h]={}; FG_PER_HYMN[h][k]=val; }
+    _currentFGHymn=null; // reset cache
+  });
+  row.querySelector('.fg-del').addEventListener('click', e=>{
+    const k = e.target.dataset.kanji;
+    const s = e.target.dataset.scope;
+    const h = e.target.dataset.hymn;
+    if(s==='global') delete FG_GLOBAL[k];
+    else if(h) delete FG_PER_HYMN[h]?.[k];
+    _currentFGHymn=null;
+    if(s==='global') renderFGGlobal();
+    else renderFGHymno(h);
+  });
+  return row;
+}
+
+// Add global entry
+document.getElementById('fg-g-add')?.addEventListener('click',()=>{
+  const k = document.getElementById('fg-g-kanji').value.trim();
+  const r = document.getElementById('fg-g-reading').value.trim();
+  if(!k||!r) return;
+  FG_GLOBAL[k]=r;
+  _currentFGHymn=null;
+  document.getElementById('fg-g-kanji').value='';
+  document.getElementById('fg-g-reading').value='';
+  renderFGGlobal();
+});
+
+// ── Per-hymn furigana ────────────────────────────────────────────
+function populateFGHymnoSel(){
+  const sel = document.getElementById('fg-hymno-sel');
+  if(!sel || sel.options.length > 1) return;
+  for(let n=1; n<=695; n++){
+    const opt = document.createElement('option');
+    opt.value=n;
+    opt.textContent=n+' — '+(esp_titles[String(n)]||'Himno '+n);
+    sel.appendChild(opt);
+  }
+}
+
+document.getElementById('fg-hymno-sel')?.addEventListener('change', e=>{
+  fgCurrentHymn = e.target.value || null;
+  if(fgCurrentHymn){
+    document.getElementById('fg-hymno-add-row').style.display='flex';
+    renderFGHymno(fgCurrentHymn);
+  } else {
+    document.getElementById('fg-hymno-table').innerHTML='';
+    document.getElementById('fg-hymno-add-row').style.display='none';
+  }
+});
+
+// Pre-select current hymn if in context
+function preselectFGHymn(){
+  if(!currentEspNum) return;
+  const sel = document.getElementById('fg-hymno-sel');
+  if(sel) sel.value = String(currentEspNum);
+  fgCurrentHymn = String(currentEspNum);
+  document.getElementById('fg-hymno-add-row').style.display='flex';
+  renderFGHymno(fgCurrentHymn);
+}
+
+function renderFGHymno(hymnNum){
+  const tbl = document.getElementById('fg-hymno-table');
+  if(!tbl) return;
+  tbl.innerHTML='';
+  const entries = Object.entries(FG_PER_HYMN[String(hymnNum)]||{}).sort((a,b)=>a[0].localeCompare(b[0],'ja'));
+  if(entries.length===0){
+    tbl.innerHTML='<div style="padding:10px;font-family:Cinzel,serif;font-size:.7rem;color:#AAAAAA;text-align:center">Sin entradas específicas para este himno</div>';
+    return;
+  }
+  for(const [kanji, reading] of entries){
+    tbl.appendChild(fgRow(kanji, reading, 'hymno', hymnNum));
+  }
+}
+
+document.getElementById('fg-h-add')?.addEventListener('click',()=>{
+  if(!fgCurrentHymn) return;
+  const k = document.getElementById('fg-h-kanji').value.trim();
+  const r = document.getElementById('fg-h-reading').value.trim();
+  if(!k||!r) return;
+  if(!FG_PER_HYMN[fgCurrentHymn]) FG_PER_HYMN[fgCurrentHymn]={};
+  FG_PER_HYMN[fgCurrentHymn][k]=r;
+  _currentFGHymn=null;
+  document.getElementById('fg-h-kanji').value='';
+  document.getElementById('fg-h-reading').value='';
+  renderFGHymno(fgCurrentHymn);
+});
+
+// Open furigana editor pre-selected to current hymn
+const _origOpenAdmin = openAdmin;
+openAdmin = function(){
+  _origOpenAdmin();
+  setTimeout(()=>{
+    // Auto-open furigana section and pre-select current hymn
+    document.getElementById('admin-fg-body').classList.add('open');
+    renderFGGlobal();
+    if(currentEspNum){
+      populateFGHymnoSel();
+      const sel = document.getElementById('fg-hymno-sel');
+      if(sel){ sel.value=String(currentEspNum); }
+      fgCurrentHymn=String(currentEspNum);
+      document.getElementById('fg-hymno-add-row').style.display='flex';
+      renderFGHymno(fgCurrentHymn);
+    }
+  }, 100);
 };
 
 // ══════════════════════════════════════════
@@ -2451,12 +2711,45 @@ saveTimestamps = function(espNum, lang, times){
     <button id="admin-close">✕ Cerrar</button>
   </div>
   <div id="admin-body">
+    <!-- Furigana editor -->
+    <div id="admin-fg-section">
+      <div id="admin-fg-hdr">
+        <span id="admin-fg-hdr-title">⟨ruby⟩ Editor de Furigana</span>
+        <span style="color:#CCCCCC;font-size:.8rem">▼</span>
+      </div>
+      <div id="admin-fg-body">
+        <div class="fg-tab-bar">
+          <button class="fg-tab on" data-fgtab="global">Global (todos los himnos)</button>
+          <button class="fg-tab" data-fgtab="hymno">Por himno específico</button>
+        </div>
+        <div id="fg-global-panel">
+          <div class="fg-table" id="fg-global-table"></div>
+          <div class="fg-add-row">
+            <input class="fg-new-kanji" id="fg-g-kanji" type="text" placeholder="漢字">
+            <input class="fg-new-reading" id="fg-g-reading" type="text" placeholder="よみかた">
+            <button class="fg-add-btn" id="fg-g-add">+ Agregar</button>
+          </div>
+        </div>
+        <div id="fg-hymno-panel" style="display:none">
+          <select class="fg-hymn-sel" id="fg-hymno-sel">
+            <option value="">— Seleccioná un himno —</option>
+          </select>
+          <div class="fg-table" id="fg-hymno-table"></div>
+          <div class="fg-add-row" id="fg-hymno-add-row" style="display:none">
+            <input class="fg-new-kanji" id="fg-h-kanji" type="text" placeholder="漢字">
+            <input class="fg-new-reading" id="fg-h-reading" type="text" placeholder="よみかた">
+            <button class="fg-add-btn" id="fg-h-add">+ Agregar</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Hymn cards injected by JS -->
     <div id="admin-loading" style="text-align:center;padding:40px;font-family:Cinzel,serif;font-size:.8rem;color:#AAAAAA;letter-spacing:.1em">Cargando configuración...</div>
   </div>
   <div id="admin-footer">
     <button id="admin-save-btn">💾 Guardar cambios</button>
     <button id="admin-dl-btn">⬇ Descargar tiempos.json</button>
+    <button id="admin-fg-dl-btn" style="background:#F5F5F5;border:1px solid #DDDDDD;color:#333333;padding:10px 16px;font-family:Cinzel,serif;font-size:.8rem;letter-spacing:.08em;cursor:pointer;border-radius:3px">⬇ Descargar furigana.json</button>
     <span id="admin-status"></span>
   </div>
 </div>

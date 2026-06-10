@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "description": "Configuración de karaoke — Himnario Adventista Español-Japonés",
+  "himnos": {
+    "55": {
+      "jpn": {
+        "activo": "v1",
+        "versiones": {
+          "v1": {
+            "titulo": "主の真実はくしきかな — worship&hymns歌い隊",
+            "youtube": "D-x_jE_P2xA",
+            "tiempos": null
+          },
+          "v2": {
+            "titulo": "主のまことはくしきかな — Short版",
+            "youtube": "VsVLUAIHVG4",
+            "tiempos": null
+          }
+        }
+      },
+      "esp": {
+        "activo": null,
+        "versiones": {}
+      }
+    },
+    "547": {
+      "jpn": {
+        "activo": "v1",
+        "versiones": {
+          "v1": {
+            "titulo": "この日は主がつくられた — 川越ますみ",
+            "youtube": "e_xYEeki_1M",
+            "tiempos": null
+          }
+        }
+      },
+      "esp": {
+        "activo": null,
+        "versiones": {}
+      }
+    }
+  }
+}
